@@ -47,6 +47,7 @@ async function importLs(user, b) {
   const month = Number(b.month), week = Number(b.week);
   if (!(month >= 1 && week >= 1)) throw httpError(400, 'Мақсатты оқу айы мен аптасы керек.');
   const comboIds = new Set(cat.combinations.map((c) => c.id));
+  const comboByCode = new Map(cat.combinations.map((c) => [norm(c.code), c.id]));
   const division = (cfg.divisions || {})[streamId] || '';
   const divisionIsStream = !!division && Object.entries(cfg.divisions || {}).filter(([, v]) => v === division).length === 1;
   const importedAt = new Date().toISOString();
@@ -91,7 +92,7 @@ async function importLs(user, b) {
       const teacherId = existing ? existing.teacher_id : a && a.teacher_id;
       const teacher = cat.teachers.find((t) => t.id === teacherId);
       if (!teacher) throw httpError(400, 'Бұл ағым мен пәнге мұғалім тағайындалмаған.');
-      const merged = mergeLessons(existing && existing.data, job.rows, { streamId, teacher, config: cfg, comboIds, divisionIsStream, importedAt, source: job.source, sourcePeriod: job.sourcePeriod, actor: user.username });
+      const merged = mergeLessons(existing && existing.data, job.rows, { streamId, teacher, config: cfg, comboIds, comboByCode, divisionIsStream, importedAt, source: job.source, sourcePeriod: job.sourcePeriod, actor: user.username });
       res.teacher = teacher.full_name;
       res.summary = merged.summary;
       res.reportId = existing ? existing.id : null;
@@ -101,7 +102,7 @@ async function importLs(user, b) {
         if (!rep) rep = (await createReport(user, { type: 'ls', stream_id: streamId, subject_id: job.subject.id, period: { id: period.id }, teacher_id: teacherId, data: {} })).report;
         const saved = await mutateReportData(user, rep.id, `import:${job.source}`, (cur) => {
           // Транзакция ішінде соңғы нұсқаға қайта біріктіреміз: импорт кезінде ментор сақтаса да ештеңе жоғалмайды.
-          return mergeLessons(cur, job.rows, { streamId, teacher, config: cfg, comboIds, divisionIsStream, importedAt, source: job.source, sourcePeriod: job.sourcePeriod, actor: user.username }).data;
+          return mergeLessons(cur, job.rows, { streamId, teacher, config: cfg, comboIds, comboByCode, divisionIsStream, importedAt, source: job.source, sourcePeriod: job.sourcePeriod, actor: user.username }).data;
         });
         res.reportId = saved.id;
         res.version = saved.version;

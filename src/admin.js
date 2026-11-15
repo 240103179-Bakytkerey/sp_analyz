@@ -436,7 +436,7 @@ function importHTML() {
       return '<tr><td>' + esc(r.subject || '') + (r.teacher ? '<br><small>' + esc(r.teacher) + '</small>' : '') + '</td><td>' + (r.error ? '<span class="warnText">' + esc(r.error) + '</span>' + (r.details ? '<ul>' + r.details.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') :
         s && 'lessons' in s ? s.lessons + ' сабақ · жаңа ' + s.added + ' · жаңартылды ' + s.updated + (s.kept ? ' · сақталды ' + s.kept : '') + (s.skipped.length ? '<br><small>' + s.skipped.length + ' жол өткізілді</small>' : '') :
         s ? fmtNum(s.score) + '/' + fmtNum(s.max) + ' · ' + fmtInt(s.submitted) + ' тапсырды · ' + s.groups + ' топ · ' + s.hardTasks + ' тапсырма' : '') + (r.applied ? '<br><span class="chip on">жобаға сақталды</span>' : r.error ? '' : '<br><span class="chip draft">алдын ала қарау — сақталмады</span>') + '</td>' +
-        '<td>' + (s ? '<ul class="plain small">' + s.warnings.slice(0, 12).map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + (s.skipped ? s.skipped.slice(0, 8).map(function (x) { return '<li>' + x.row + '-жол: ' + esc(x.reason) + '</li>'; }).join('') : '') + '</ul>' : '') + '</td>' +
+        '<td>' + (s && s.unknownCombos && s.unknownCombos.length ? '<div class="aChecks">' + s.unknownCombos.map(function (c) { return '<span class="aCheck">' + esc(c) + ' <button class="aBtn ghost" type="button" data-combo-new="' + esc(c) + '">+ комбинация</button><button class="aBtn ghost" type="button" data-combo-ignore="' + esc(c) + '">комбинация емес</button></span>'; }).join('') + '</div>' : '') + (s ? '<ul class="plain small">' + s.warnings.slice(0, 12).map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + (s.skipped ? s.skipped.slice(0, 8).map(function (x) { return '<li>' + x.row + '-жол: ' + esc(x.reason) + '</li>'; }).join('') : '') + '</ul>' : '') + '</td>' +
         '<td>' + (r.reportId ? '<button class="aBtn" type="button" data-open="' + esc(r.reportId) + '">Есепті ашу</button>' : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>';
   };
@@ -625,7 +625,7 @@ function settingsHTML() {
     '<div class="aRow">' + cat().streams.map(function (s) { return '<label class="aField"><span>' + esc(s.name) + ' — division</span><input class="aIn" data-cfg="sap.divisions.' + s.id + '" value="' + esc(sc.divisions[s.id] || '') + '"></label>'; }).join('') +
     (st.sapaline.configured ? '<button class="aBtn" type="button" data-a="discover">Анықтау</button>' : '') + '</div>' +
     (disc ? '<div class="aCard inner"><p><b>SapaLine-дағы division мәндері:</b> ' + disc.divisions.map(esc).join(', ') + '</p>' + (disc.subjects.length ? '<p><b>Пән кодтары:</b> ' + disc.subjects.map(esc).join(', ') + '</p>' + sapCodeCheck(disc) + '<p><b>Ағым кодтары</b> (басып, біздің ағымға тіркеңіз):</p><div class="aChecks">' + disc.streams.map(function (code) { var have = (sc.agym || []).some(function (r) { return r.agym === code; }); return '<span class="aCheck">' + esc(code) + (have ? ' ✓' : cat().streams.map(function (st) { return ' <button class="aBtn ghost" type="button" data-agym-add="' + esc(code) + '" data-agym-stream="' + st.id + '">→ ' + esc(st.short) + '</button>'; }).join('')) + '</span>'; }).join('') + '</div><p><p><b>Мұғалімдер:</b> ' + disc.teachers.map(esc).join(', ') + '</p><p><b>Сауалнама кілттері:</b> ' + disc.surveyKeys.map(esc).join(', ') + '</p>' : '<p class="aSrc">Пән/ағым кодтарын көру үшін division жазып, қайта «Анықтау» басыңыз.</p>') + '</div>' : '') +
-    '<h3>SapaLine ағым коды → ағым және комбинация</h3><p class="aHint">Division бір ағымға ғана берілсе, кодсыз сабақтар сол ағымға «комбинациясы белгісіз» болып түседі. Бірнеше ағымға ортақ болса — әр код осында болуы керек.</p>' +
+    '<h3>SapaLine ағым коды → ағым және комбинация</h3><p class="aHint">Әдетте ереже керек емес: «ИНФОМАТ-1» сияқты кодтың соңғы саны — ағым (1 → SP-1), алдыңғы бөлігі — комбинация коды (Анықтамалықтағы кодпен сәйкестендіріледі). «ГЕОМАТ-1, ФИЗМАТ-1» — ортақ сабақ. Осы ережеге бағынбайтын код болса ғана төменге қосыңыз.</p>' +
     sc.agym.map(function (r, i) {
       return '<div class="aRow tight"><label class="aField"><span>SapaLine «stream» мәні</span><input class="aIn" data-cfg="sap.agym.' + i + '.agym" value="' + esc(r.agym || '') + '"></label>' +
         '<label class="aField"><span>Ағым</span><select class="aSel" data-cfg="sap.agym.' + i + '.stream">' + streamOpts().map(function (x) { return opt(x[0], x[1], r.stream); }).join('') + '</select></label>' +
@@ -778,6 +778,22 @@ adminEl.addEventListener('click', function (ev) {
     var code = b.getAttribute('data-courses');
     var csubj = b.getAttribute('data-courses-subj');
     api('POST', '/api/import?action=platform-courses', { code: code }).then(function (x) { AD.courses = { code: code, subject: csubj, list: x.courses }; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); });
+    return;
+  }
+  if ((b = t.closest('[data-combo-new]'))) {
+    var code = b.getAttribute('data-combo-new');
+    if (!isAdmin()) { toast('Комбинацияны әкімші қосады', 'bad'); return; }
+    api('POST', '/api/catalog', { kind: 'combinations', item: { code: code, name: code } }).then(reloadCatalog).then(function () { b.closest('.aCheck').innerHTML = esc(code) + ' ✓ қосылды'; toast('«' + code + '» комбинация ретінде қосылды — алдын ала қарауды қайталаңыз'); }).catch(function (e) { toast(e.message, 'bad'); });
+    return;
+  }
+  if ((b = t.closest('[data-combo-ignore]'))) {
+    var ic = b.getAttribute('data-combo-ignore');
+    if (!isAdmin()) { toast('Мұны әкімші белгілейді', 'bad'); return; }
+    api('GET', '/api/import').then(function (x) {
+      var conf = x.sapaline.config || {}; delete conf._meta;
+      conf.ignoreCodes = (conf.ignoreCodes || []).concat([ic]).filter(function (v, i, a) { return a.indexOf(v) === i; });
+      return api('POST', '/api/import?action=config-sapaline', { config: conf });
+    }).then(function () { AD.sapCfg = null; b.closest('.aCheck').innerHTML = esc(ic) + ' — комбинация емес'; toast('Белгіленді'); }).catch(function (e) { toast(e.message, 'bad'); });
     return;
   }
   if ((b = t.closest('[data-agym-add]'))) {
