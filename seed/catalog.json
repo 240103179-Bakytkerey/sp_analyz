@@ -1,0 +1,785 @@
+{
+  "note": "Бастапқы анықтамалық. Дерекқор бос болғанда бір рет жүктеледі; кейін әкімші бөлімінде өзгертіледі.",
+  "subjects": [
+    {
+      "id": "physics",
+      "name": "Физика",
+      "short": "Физ",
+      "glyph": "F",
+      "glyphs": "F=ma v a t g λ Ω E Δt ∑F N J W ħ ν ρ",
+      "sort": 1
+    },
+    {
+      "id": "toefl",
+      "name": "TOEFL",
+      "short": "TOEFL",
+      "glyph": "Aa",
+      "glyphs": "A b C d e F g H i j K l M n o P q R s T u V w X y Z",
+      "sort": 2
+    },
+    {
+      "id": "informatics",
+      "name": "Информатика",
+      "short": "Инф",
+      "glyph": "</>",
+      "glyphs": "0 1 { } ; if for while == && || def int bit 0x <> []",
+      "sort": 3
+    },
+    {
+      "id": "law",
+      "name": "Құқық",
+      "short": "Құқ",
+      "glyph": "§",
+      "glyphs": "§ ¶ ст. ҚР бап заң № ⅰ ⅱ ⅲ",
+      "sort": 4
+    },
+    {
+      "id": "kaz_lit",
+      "name": "Қазақ әдебиеті",
+      "short": "Қаз әдеб",
+      "glyph": "Әд",
+      "glyphs": "Абай өлең жыр ақын роман « » — ! ?",
+      "sort": 5
+    },
+    {
+      "id": "kaz_lang",
+      "name": "Қазақ тілі",
+      "short": "Қаз тілі",
+      "glyph": "Ә",
+      "glyphs": "ә ғ қ ң ө ұ ү һ і Ә Ғ Қ Ң Ө Ұ Ү",
+      "sort": 6
+    },
+    {
+      "id": "rus_lit",
+      "name": "Орыс әдебиеті",
+      "short": "Орыс әдеб",
+      "glyph": "Лит",
+      "glyphs": "стих роман поэт « » — ! ? ё",
+      "sort": 7
+    },
+    {
+      "id": "rus_lang",
+      "name": "Орыс тілі",
+      "short": "Орыс тілі",
+      "glyph": "Ё",
+      "glyphs": "а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я",
+      "sort": 8
+    },
+    {
+      "id": "math",
+      "name": "Математика",
+      "short": "Мат",
+      "glyph": "∑",
+      "glyphs": "0 1 2 3 4 5 6 7 8 9 + − × ÷ = ≠ ≤ ≥ √ ∑ π ∞ ∫ x y f log sin cos % ² ³ Δ λ",
+      "sort": 9
+    },
+    {
+      "id": "geometry",
+      "name": "Геометрия",
+      "short": "Геом",
+      "glyph": "△",
+      "glyphs": "△ ∠ ⊥ ∥ ○ ° π R r S a b c h α β γ ≅ ∼ ⌒ ◇ □ sin cos tg 90° 60° 45° AB",
+      "sort": 10
+    },
+    {
+      "id": "biology",
+      "name": "Биология",
+      "short": "Био",
+      "glyph": "ДНҚ",
+      "glyphs": "ДНҚ РНҚ АТФ C₆H₁₂O₆ O₂ CO₂ 2n n XX XY Aa",
+      "sort": 11
+    },
+    {
+      "id": "world_history",
+      "name": "Дүниежүзі тарихы",
+      "short": "Дүн. тарих",
+      "glyph": "Ⅸ",
+      "glyphs": "Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ ғ. б.з.д.",
+      "sort": 12
+    },
+    {
+      "id": "geography",
+      "name": "География",
+      "short": "Геогр",
+      "glyph": "N",
+      "glyphs": "N S E W ° ′ ″ км м³ ‰ ↑ ↓ ⇡",
+      "sort": 13
+    },
+    {
+      "id": "chemistry",
+      "name": "Химия",
+      "short": "Хим",
+      "glyph": "H₂O",
+      "glyphs": "H He Li C N O Na Cl Fe ⇌ → H₂O CO₂ pH mol H₂SO₄ NaCl e⁻",
+      "sort": 14
+    },
+    {
+      "id": "math_lit",
+      "name": "Математикалық сауаттылық",
+      "short": "Мат сауат",
+      "glyph": "%",
+      "glyphs": "% ‰ 1 2 3 4 5 6 7 8 9 0 + − × ÷ =",
+      "sort": 15
+    },
+    {
+      "id": "kz_history",
+      "name": "Қазақстан тарихы",
+      "short": "ҚР тарихы",
+      "glyph": "ҚТ",
+      "glyphs": "Ⅰ Ⅱ Ⅲ Ⅴ Ⅹ ғ. хан би жүз",
+      "sort": 16
+    }
+  ],
+  "streams": [
+    {
+      "id": "sp1",
+      "name": "SMART PRO-1",
+      "short": "SP-1",
+      "sort": 1
+    },
+    {
+      "id": "sp2",
+      "name": "SMART PRO-2",
+      "short": "SP-2",
+      "sort": 2
+    },
+    {
+      "id": "sp3",
+      "name": "SMART PRO-3",
+      "short": "SP-3",
+      "sort": 3
+    }
+  ],
+  "combinations": [
+    {
+      "id": "c_bh",
+      "code": "БХ",
+      "name": "Биология – Химия",
+      "sort": 1
+    },
+    {
+      "id": "c_fh",
+      "code": "ФХ",
+      "name": "Физика – Химия",
+      "sort": 2
+    }
+  ],
+  "teachers": [
+    {
+      "id": "t_izgilik_slanbek",
+      "full_name": "Ізгілік Сланбек",
+      "display": "Ізгілік Сланбек",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_amirbekova_azhar",
+      "full_name": "Амирбекова Ажар",
+      "display": "Амирбекова Ажар",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_nurlanov_eduard",
+      "full_name": "Нұрланов Эдуард",
+      "display": "Нұрланов Эдуард",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_amangaliev_adilet",
+      "full_name": "Амангалиев Әділет",
+      "display": "Амангалиев Әділет",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_zhailaubek_togzhan",
+      "full_name": "Жайлаубек Тоғжан",
+      "display": "Жайлаубек Тоғжан",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_zhanbolatuly_batyl",
+      "full_name": "Жанболатұлы Батыл",
+      "display": "Жанболатұлы Батыл",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_zhalgas_aidana",
+      "full_name": "Жалғас Айдана",
+      "display": "Жалғас Айдана",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_shaukilova_quralai",
+      "full_name": "Шаукилова Құралай",
+      "display": "Шаукилова Құралай",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_muratbaeva_zhansaia",
+      "full_name": "Муратбаева Жансая",
+      "display": "Муратбаева Жансая",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_qulahmet_nurdaulet",
+      "full_name": "Құлахмет Нұрдәулет",
+      "display": "Құлахмет Нұрдәулет",
+      "aliases": [],
+      "photo": "/photos/t_kulakhmet.jpg"
+    },
+    {
+      "id": "t_nurdaulet_olzhas",
+      "full_name": "Нұрдаулет Олжас",
+      "display": "Нұрдаулет Олжас",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_beket_ersultan",
+      "full_name": "Бекет Ерсұлтан",
+      "display": "Бекет Ерсұлтан",
+      "aliases": [],
+      "photo": "/photos/t_beket.jpg"
+    },
+    {
+      "id": "t_ekpin_aibota",
+      "full_name": "Екпін Айбота",
+      "display": "Екпін Айбота",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_rahmet_aitugan",
+      "full_name": "Рахмет Айтуған",
+      "display": "Рахмет Айтуған",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_izgilik_bekslan",
+      "full_name": "Ізгілік Бекслан",
+      "display": "Ізгілік Бекслан",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_raihan_ardaq",
+      "full_name": "Райхан Ардақ",
+      "display": "Райхан Ардақ",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_ozbek_beksultan",
+      "full_name": "Өзбек Бексұлтан",
+      "display": "Өзбек Бексұлтан",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_omirserikov_bahtiiar",
+      "full_name": "Өмірсеріков Бахтияр",
+      "display": "Өмірсеріков Бахтияр",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_bereke_noian",
+      "full_name": "Береке Ноян",
+      "display": "Береке Ноян",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_sansyzbaeva_zhanar",
+      "full_name": "Сансызбаева Жанар",
+      "display": "Сансызбаева Жанар",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_qazbekov_damir",
+      "full_name": "Қазбеков Дамир",
+      "display": "Қазбеков Дамир",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_muratov_dulat",
+      "full_name": "Муратов Дулат",
+      "display": "Муратов Дулат",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_bagdatov_rahat",
+      "full_name": "Бағдатов Рахат",
+      "display": "Бағдатов Рахат",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_shora_abai",
+      "full_name": "Шора Абай",
+      "display": "Шора Абай",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_amirhanov_adilet",
+      "full_name": "Әмірханов Әділет",
+      "display": "Әмірханов Әділет",
+      "aliases": [],
+      "photo": null
+    },
+    {
+      "id": "t_abdirazaq_berdibek",
+      "full_name": "Әбдіразақ Бердібек",
+      "display": "Әбдіразақ Бердібек",
+      "aliases": [],
+      "photo": null
+    }
+  ],
+  "assignments": [
+    {
+      "id": "a_sp1_physics",
+      "teacher_id": "t_izgilik_slanbek",
+      "stream_id": "sp1",
+      "subject_id": "physics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_physics",
+      "teacher_id": "t_izgilik_slanbek",
+      "stream_id": "sp2",
+      "subject_id": "physics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_physics",
+      "teacher_id": "t_izgilik_slanbek",
+      "stream_id": "sp3",
+      "subject_id": "physics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_toefl",
+      "teacher_id": "t_amirbekova_azhar",
+      "stream_id": "sp1",
+      "subject_id": "toefl",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_toefl",
+      "teacher_id": "t_amirbekova_azhar",
+      "stream_id": "sp2",
+      "subject_id": "toefl",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_toefl",
+      "teacher_id": "t_amirbekova_azhar",
+      "stream_id": "sp3",
+      "subject_id": "toefl",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_informatics",
+      "teacher_id": "t_nurlanov_eduard",
+      "stream_id": "sp1",
+      "subject_id": "informatics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_informatics",
+      "teacher_id": "t_nurlanov_eduard",
+      "stream_id": "sp2",
+      "subject_id": "informatics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_informatics",
+      "teacher_id": "t_nurlanov_eduard",
+      "stream_id": "sp3",
+      "subject_id": "informatics",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_law",
+      "teacher_id": "t_amangaliev_adilet",
+      "stream_id": "sp1",
+      "subject_id": "law",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_law",
+      "teacher_id": "t_amangaliev_adilet",
+      "stream_id": "sp2",
+      "subject_id": "law",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_law",
+      "teacher_id": "t_amangaliev_adilet",
+      "stream_id": "sp3",
+      "subject_id": "law",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_kaz_lit",
+      "teacher_id": "t_zhailaubek_togzhan",
+      "stream_id": "sp1",
+      "subject_id": "kaz_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_kaz_lit",
+      "teacher_id": "t_zhanbolatuly_batyl",
+      "stream_id": "sp2",
+      "subject_id": "kaz_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_kaz_lit",
+      "teacher_id": "t_zhailaubek_togzhan",
+      "stream_id": "sp3",
+      "subject_id": "kaz_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_kaz_lang",
+      "teacher_id": "t_zhalgas_aidana",
+      "stream_id": "sp1",
+      "subject_id": "kaz_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_kaz_lang",
+      "teacher_id": "t_zhalgas_aidana",
+      "stream_id": "sp2",
+      "subject_id": "kaz_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_kaz_lang",
+      "teacher_id": "t_zhalgas_aidana",
+      "stream_id": "sp3",
+      "subject_id": "kaz_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_rus_lit",
+      "teacher_id": "t_shaukilova_quralai",
+      "stream_id": "sp1",
+      "subject_id": "rus_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_rus_lit",
+      "teacher_id": "t_shaukilova_quralai",
+      "stream_id": "sp2",
+      "subject_id": "rus_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_rus_lit",
+      "teacher_id": "t_shaukilova_quralai",
+      "stream_id": "sp3",
+      "subject_id": "rus_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_rus_lang",
+      "teacher_id": "t_muratbaeva_zhansaia",
+      "stream_id": "sp1",
+      "subject_id": "rus_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_rus_lang",
+      "teacher_id": "t_muratbaeva_zhansaia",
+      "stream_id": "sp2",
+      "subject_id": "rus_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_rus_lang",
+      "teacher_id": "t_muratbaeva_zhansaia",
+      "stream_id": "sp3",
+      "subject_id": "rus_lang",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_math",
+      "teacher_id": "t_qulahmet_nurdaulet",
+      "stream_id": "sp1",
+      "subject_id": "math",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_math",
+      "teacher_id": "t_nurdaulet_olzhas",
+      "stream_id": "sp2",
+      "subject_id": "math",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_math",
+      "teacher_id": "t_beket_ersultan",
+      "stream_id": "sp3",
+      "subject_id": "math",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_geometry",
+      "teacher_id": "t_qulahmet_nurdaulet",
+      "stream_id": "sp1",
+      "subject_id": "geometry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_geometry",
+      "teacher_id": "t_nurdaulet_olzhas",
+      "stream_id": "sp2",
+      "subject_id": "geometry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_geometry",
+      "teacher_id": "t_beket_ersultan",
+      "stream_id": "sp3",
+      "subject_id": "geometry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_biology",
+      "teacher_id": "t_ekpin_aibota",
+      "stream_id": "sp1",
+      "subject_id": "biology",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_biology",
+      "teacher_id": "t_rahmet_aitugan",
+      "stream_id": "sp2",
+      "subject_id": "biology",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_biology",
+      "teacher_id": "t_ekpin_aibota",
+      "stream_id": "sp3",
+      "subject_id": "biology",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_world_history",
+      "teacher_id": "t_izgilik_bekslan",
+      "stream_id": "sp1",
+      "subject_id": "world_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_world_history",
+      "teacher_id": "t_raihan_ardaq",
+      "stream_id": "sp2",
+      "subject_id": "world_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_world_history",
+      "teacher_id": "t_ozbek_beksultan",
+      "stream_id": "sp3",
+      "subject_id": "world_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_geography",
+      "teacher_id": "t_omirserikov_bahtiiar",
+      "stream_id": "sp1",
+      "subject_id": "geography",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_geography",
+      "teacher_id": "t_bereke_noian",
+      "stream_id": "sp2",
+      "subject_id": "geography",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_geography",
+      "teacher_id": "t_omirserikov_bahtiiar",
+      "stream_id": "sp3",
+      "subject_id": "geography",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_chemistry",
+      "teacher_id": "t_sansyzbaeva_zhanar",
+      "stream_id": "sp1",
+      "subject_id": "chemistry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_chemistry",
+      "teacher_id": "t_qazbekov_damir",
+      "stream_id": "sp2",
+      "subject_id": "chemistry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_chemistry",
+      "teacher_id": "t_qazbekov_damir",
+      "stream_id": "sp3",
+      "subject_id": "chemistry",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_math_lit",
+      "teacher_id": "t_muratov_dulat",
+      "stream_id": "sp1",
+      "subject_id": "math_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_math_lit",
+      "teacher_id": "t_bagdatov_rahat",
+      "stream_id": "sp2",
+      "subject_id": "math_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_math_lit",
+      "teacher_id": "t_muratov_dulat",
+      "stream_id": "sp3",
+      "subject_id": "math_lit",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp1_kz_history",
+      "teacher_id": "t_shora_abai",
+      "stream_id": "sp1",
+      "subject_id": "kz_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp2_kz_history",
+      "teacher_id": "t_amirhanov_adilet",
+      "stream_id": "sp2",
+      "subject_id": "kz_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    },
+    {
+      "id": "a_sp3_kz_history",
+      "teacher_id": "t_abdirazaq_berdibek",
+      "stream_id": "sp3",
+      "subject_id": "kz_history",
+      "valid_from": null,
+      "valid_to": null,
+      "note": "Бастапқы тізім"
+    }
+  ]
+}
