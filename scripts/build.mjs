@@ -52,7 +52,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>JUZ40 SMART PRO · Кері байланыс</title>
+<title>JUZ40 SMART PRO · Анализ</title>
 <meta name="description" content="JUZ40 · SMART PRO мұғалімдеріне ЛС, СТ және БТ бойынша кері байланыс">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#1b36b0">

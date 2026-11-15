@@ -164,16 +164,15 @@ function heroArt() {
 }
 
 var TYPES = {
-  ls: { short: 'ЛС', name: 'LIVE сабақ', hero: 'ЛС кері байланыс', eyebrow: 'LIVE сабаққа кері байланыс', lede: 'SMART PRO мұғалімдеріне LIVE сабақ бойынша апталық кері байланыс: қатысым, оқушылардың бағасы, түсіну деңгейі және ментордың ұсынысы.' },
-  st: { short: 'СТ', name: 'Сабақ тапсыру', hero: 'СТ кері байланыс', eyebrow: 'Сабақ тапсыруға кері байланыс', lede: 'Сабақ тапсыру нәтижесі: ортақ балл, қайта тапсыру, ең көп қателескен тапсырмалар және келесі аптаға ұсыныс.' },
-  bt: { short: 'БТ', name: 'Байқау тесті', hero: 'БТ анализі', eyebrow: 'Байқау тестіне кері байланыс', lede: 'Байқау тестінің жалпы және пәндік нәтижесі, ТОП-3, ең қиын тақырыптар және келесі кезеңге әрекет жоспары.' }
+  ls: { short: 'ЛС', name: 'LIVE сабақ', hero: 'ЛС анализі', eyebrow: 'LIVE сабақ', lede: 'Оқушылардың сабаққа берген бағасы — келесі сабақты күшейтудің ең қысқа жолы.' },
+  st: { short: 'СТ', name: 'Сабақ тапсыру', hero: 'СТ анализі', eyebrow: 'Сабақ тапсыру', lede: 'Оқушы қай тапсырмада қиналғанын білу — келесі аптаны дұрыс жоспарлаудың негізі.' },
+  bt: { short: 'БТ', name: 'Байқау тесті', hero: 'БТ анализі', eyebrow: 'Байқау тесті', lede: 'Байқау тесті — оқушылардың нақты деңгейін көрсететін айна.' }
 };
 // Пән таңдау панеліндегі топтар (тек интерфейс үшін; жаңа пән «Басқа» тобына түседі).
 var SUBJ_GROUPS = [
-  { name: 'Математика және IT', ids: ['math', 'geometry', 'math_lit', 'informatics'] },
-  { name: 'Жаратылыстану', ids: ['physics', 'chemistry', 'biology', 'geography'] },
-  { name: 'Тіл және әдебиет', ids: ['kaz_lang', 'kaz_lit', 'rus_lang', 'rus_lit', 'toefl'] },
-  { name: 'Қоғам', ids: ['kz_history', 'world_history', 'law'] }
+  { name: 'Есеп', ids: ['math', 'geometry', 'math_lit', 'informatics', 'physics', 'chemistry'] },
+  { name: 'Ауызша', ids: ['biology', 'geography', 'kz_history', 'world_history', 'law', 'kaz_lit', 'rus_lit'] },
+  { name: 'Жазбаша', ids: ['kaz_lang', 'rus_lang', 'toefl'] }
 ];
 
 /* ================= state ================= */
@@ -350,8 +349,8 @@ function introHTML(stats, hasList) {
 function loginHTML(msg) {
   return '<section class="act intro" data-theme="dark" id="top"><div class="pin"><div class="ambient"></div><div class="introRing"></div>' +
     heroArt() +
-    '<div class="flow"><p class="eyebrow">JUZ40 · SMART PRO</p><h1 class="hero">Кері байланыс</h1>' +
-    '<p class="lede">SMART PRO мұғалімдеріне ЛС, СТ және БТ бойынша кері байланыс. Жеке аккаунтыңызбен кіріңіз — «Таныстым» белгіңіз сол аккаунтқа сақталады.</p>' +
+    '<div class="flow"><p class="eyebrow">JUZ40 · SMART PRO</p><h1 class="hero">Анализ</h1>' +
+    '<p class="lede">Әр аптаның нақты саны мен нақты ұсынысы — прогресске апаратын жол.</p>' +
     '<form class="loginForm" id="loginForm" autocomplete="on"><label class="aField"><span>Логин</span><input class="aIn" name="username" autocomplete="username" required></label>' +
     '<label class="aField"><span>Құпиясөз</span><input class="aIn" name="password" type="password" autocomplete="current-password" required></label>' +
     '<button class="ackBtn" type="submit">Кіру</button><p class="loginErr" id="loginErr" role="alert">' + esc(msg || '') + '</p></form>' +
@@ -361,7 +360,7 @@ function emptyHTML(hasAny) {
   var T = TYPES[F.type];
   var title = hasAny ? 'Бұл кезең бос' : 'Нәтижелер жақында';
   var note = hasAny ? 'Таңдалған сүзгі бойынша жарияланған есеп әзірге жоқ. Жоғарыдан басқа кезеңді, ағымды немесе пәнді таңдаңыз.' :
-    (F.type === 'ls' ? 'ЛС кері байланысы SapaLine сауалнамасы жабылып, ментор тексергеннен кейін осында жарияланады.' : F.type === 'st' ? 'СТ нәтижесі платформадан алынып, ментор анализі жазылғаннан кейін осында жарияланады.' : 'БТ анализін ментор енгізіп, жариялағаннан кейін осында көрсетіледі.');
+    (F.type === 'ls' ? 'ЛС анализі SapaLine сауалнамасы жабылып, ментор тексергеннен кейін осында жарияланады.' : F.type === 'st' ? 'СТ нәтижесі платформадан алынып, ментор анализі жазылғаннан кейін осында жарияланады.' : 'БТ анализін ментор енгізіп, жариялағаннан кейін осында көрсетіледі.');
   return '<section class="act teacher" data-theme="light" data-side="right" data-sig="1" data-flow="natural" data-fixed><div class="pin"><div class="ambient"></div><div class="flow"><div class="row"><div class="textCol">' +
     '<div class="badges"><span class="pill solid">' + T.short + ' · ' + esc(T.name) + '</span></div><h2 class="name">' + title + '</h2>' +
     '<p class="emptyNote">' + note + '</p>' +
@@ -391,7 +390,7 @@ function rosterHTML(entries, periodLabel, comboIds) {
   var s = subjOf(F.subject);
   return '<section class="act roster" id="roster" data-theme="light" data-flow="natural" aria-label="Мұғалімдер тізімі"><div class="pin"><div class="ambient"></div><div class="flow">' +
     '<p class="rosterEyebrow">' + TYPES[F.type].short + ' · ' + esc(s ? s.name : 'Барлық пәндер') + ' · ' + esc(periodLabel) + '</p><h2 class="rosterTitle">Мұғалімдер</h2>' +
-    '<p class="rosterHint">Атыңызды басыңыз — өз кері байланысыңызға бірден өтесіз. Тізімге «Тізім» батырмасымен ораласыз.</p>' +
+    '<p class="rosterHint">Атыңызды басыңыз — өз анализіңізге бірден өтесіз.</p>' +
     comboChips(comboIds) +
     groups.map(function (g) {
       return (groups.length > 1 || F.stream === 'all' ? '<p class="rosterGroup"><span>' + esc(g.name) + '</span></p>' : '') + '<div class="rosterGrid">' + g.items.map(function (x) {
