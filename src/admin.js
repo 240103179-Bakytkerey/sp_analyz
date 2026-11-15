@@ -624,7 +624,7 @@ function settingsHTML() {
     ' SMART PRO-ның SapaLine-дағы нақты division мәні мен пән кодтары әзірлеу кезінде тексерілмеді: «Анықтау» батырмасымен SapaLine-ның өзінен көріп, төменге жазыңыз. Жорамалмен бекітілмейді.</p>' +
     '<div class="aRow">' + cat().streams.map(function (s) { return '<label class="aField"><span>' + esc(s.name) + ' — division</span><input class="aIn" data-cfg="sap.divisions.' + s.id + '" value="' + esc(sc.divisions[s.id] || '') + '"></label>'; }).join('') +
     (st.sapaline.configured ? '<button class="aBtn" type="button" data-a="discover">Анықтау</button>' : '') + '</div>' +
-    (disc ? '<div class="aCard inner"><p><b>SapaLine-дағы division мәндері:</b> ' + disc.divisions.map(esc).join(', ') + '</p>' + (disc.subjects.length ? '<p><b>Пән кодтары:</b> ' + disc.subjects.map(esc).join(', ') + '</p><p><b>Ағым кодтары:</b> ' + disc.streams.map(esc).join(', ') + '</p><p><b>Мұғалімдер:</b> ' + disc.teachers.map(esc).join(', ') + '</p><p><b>Сауалнама кілттері:</b> ' + disc.surveyKeys.map(esc).join(', ') + '</p>' : '<p class="aSrc">Пән/ағым кодтарын көру үшін division жазып, қайта «Анықтау» басыңыз.</p>') + '</div>' : '') +
+    (disc ? '<div class="aCard inner"><p><b>SapaLine-дағы division мәндері:</b> ' + disc.divisions.map(esc).join(', ') + '</p>' + (disc.subjects.length ? '<p><b>Пән кодтары:</b> ' + disc.subjects.map(esc).join(', ') + '</p>' + sapCodeCheck(disc) + '<p><b>Ағым кодтары</b> (басып, біздің ағымға тіркеңіз):</p><div class="aChecks">' + disc.streams.map(function (code) { var have = (sc.agym || []).some(function (r) { return r.agym === code; }); return '<span class="aCheck">' + esc(code) + (have ? ' ✓' : cat().streams.map(function (st) { return ' <button class="aBtn ghost" type="button" data-agym-add="' + esc(code) + '" data-agym-stream="' + st.id + '">→ ' + esc(st.short) + '</button>'; }).join('')) + '</span>'; }).join('') + '</div><p><p><b>Мұғалімдер:</b> ' + disc.teachers.map(esc).join(', ') + '</p><p><b>Сауалнама кілттері:</b> ' + disc.surveyKeys.map(esc).join(', ') + '</p>' : '<p class="aSrc">Пән/ағым кодтарын көру үшін division жазып, қайта «Анықтау» басыңыз.</p>') + '</div>' : '') +
     '<h3>SapaLine ағым коды → ағым және комбинация</h3><p class="aHint">Division бір ағымға ғана берілсе, кодсыз сабақтар сол ағымға «комбинациясы белгісіз» болып түседі. Бірнеше ағымға ортақ болса — әр код осында болуы керек.</p>' +
     sc.agym.map(function (r, i) {
       return '<div class="aRow tight"><label class="aField"><span>SapaLine «stream» мәні</span><input class="aIn" data-cfg="sap.agym.' + i + '.agym" value="' + esc(r.agym || '') + '"></label>' +
@@ -636,16 +636,31 @@ function settingsHTML() {
     UNDERSTANDING.map(function (c) { return '<label class="aField"><span>' + c.label + '</span><input class="aIn" data-cfg="sap.understandingKeys.' + c.key + '" value="' + esc(sc.understandingKeys[c.key] || '') + '"></label>'; }).join('') + '</div>' +
     '<div class="aRow"><button class="aBtn primary" type="button" data-a="sap-save">SapaLine баптауын сақтау</button></div></div>' +
     '<div class="aCard"><h3>JUZ40 платформасы баптауы</h3><p class="aHint">' + (st.platform.configured ? 'Аккаунт бапталған.' : '<span class="warnText">JUZ40_LOGIN / JUZ40_PASSWORD берілмеген.</span>') + ' Әр ағым × пәнге платформадағы курс id-ін беріңіз. Бір комбинация әрдайым бір курс деп жорамалданбайды: топтардың комбинацияға сәйкестігін «Топ атауы = код» жолдарымен жазыңыз.</p>' +
+    (st.platform.configured ? '<div class="aRow"><button class="aBtn" type="button" data-a="plat-subjects">Платформадағы пәндерді анықтау</button></div>' + platSubjectsHTML() : '') +
     '<div class="aRow">' + sel('', pf, streamOpts(), { label: 'Ағым', name: 'plat-filter' }) + '<label class="aField"><span>Қиын тапсырмалар саны (импортта)</span><input class="aIn num" data-cfg="plat.hardTaskLimit" value="' + esc(pc.hardTaskLimit || 10) + '"></label></div>' +
     '<div class="aTableWrap"><table class="aTable"><thead><tr><th>Пән</th><th>Платформа курс id</th><th>Курс атауы</th><th>Топ → комбинация</th><th></th></tr></thead><tbody>' +
     pairs.filter(function (p) { return p[0].id === pf; }).map(function (p) {
       var key = p[0].id + '.' + p[1].id, c = pc.courses[key] || {}, g = pc.groups[key] || {};
       return '<tr><td>' + esc(p[1].name) + (p[1].platform_code ? '<br><small>код: ' + esc(p[1].platform_code) + '</small>' : '') + '</td><td><input class="aIn" data-cfg="plat.courses.' + key + '.courseId" value="' + esc(c.courseId || '') + '"></td><td><input class="aIn" data-cfg="plat.courses.' + key + '.courseName" value="' + esc(c.courseName || '') + '"></td>' +
         '<td><textarea class="aTa" rows="2" data-cfg-groups="' + key + '" placeholder="Куратор Аты = БХ">' + esc(Object.keys(g).map(function (k) { var cc = comboOf(g[k]); return k + ' = ' + (cc ? cc.code : g[k]); }).join('\n')) + '</textarea></td>' +
-        '<td>' + (st.platform.configured && p[1].platform_code ? '<button class="aBtn ghost" type="button" data-courses="' + esc(p[1].platform_code) + '">Курстар</button>' : '') + '</td></tr>';
+        '<td>' + (st.platform.configured && p[1].platform_code ? '<button class="aBtn ghost" type="button" data-courses="' + esc(p[1].platform_code) + '" data-courses-subj="' + esc(p[1].id) + '">Курстар</button>' : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
-    (AD.courses ? '<div class="aCard inner"><p><b>Платформадағы курстар (' + esc(AD.courses.code) + '):</b></p><ul class="plain small">' + AD.courses.list.map(function (c) { return '<li><code>' + esc(c.id) + '</code> — ' + esc(c.name) + (c.year ? ' · ' + c.year : '') + (c.active ? '' : ' · белсенді емес') + '</li>'; }).join('') + '</ul></div>' : '') +
+    (AD.courses ? '<div class="aCard inner"><p><b>Платформадағы курстар (' + esc(AD.courses.code) + '):</b></p><ul class="plain small">' + AD.courses.list.map(function (c) { return '<li><code>' + esc(c.id) + '</code> — ' + esc(c.name) + (c.year ? ' · ' + c.year : '') + (c.active ? '' : ' · белсенді емес') + ' ' + cat().streams.map(function (st) { return '<button class="aBtn ghost" type="button" data-course="' + esc(c.id) + '" data-course-name="' + esc(c.name) + '" data-course-key="' + st.id + '.' + esc(AD.courses.subject) + '">→ ' + esc(st.short) + '</button>'; }).join('') + '</li>'; }).join('') + '</ul></div>' : '') +
     '<div class="aRow"><button class="aBtn primary" type="button" data-a="plat-save">Платформа баптауын сақтау</button></div></div>';
+}
+function sapCodeCheck(disc) {
+  var missing = cat().subjects.filter(function (x) { return x.sapaline_code && disc.subjects.indexOf(x.sapaline_code) < 0; });
+  return missing.length ? '<p class="warnText">Бұл кезеңде SapaLine-да кездеспеген пән кодтары: ' + missing.map(function (x) { return esc(x.name + ' (' + x.sapaline_code + ')'); }).join(', ') + '. Ол пәнде сабақ болмаған болуы мүмкін, не код басқа — Анықтамалық → Пәндер.</p>' : '<p class="aSrc">Барлық пәннің SapaLine коды табылды ✓</p>';
+}
+function normName(x) { return String(x || '').toLowerCase().replace(/[^a-zа-яәғқңөұүһі0-9]+/gi, ' ').trim(); }
+function platSubjectsHTML() {
+  var ps = AD.platSubjects; if (!ps) return '';
+  var rows = cat().subjects.map(function (x) {
+    var m = ps.filter(function (p) { return normName(p.nameKz) === normName(x.name); })[0];
+    var val = x.platform_code || (m && m.shortName) || '';
+    return '<tr><td>' + esc(x.name) + '</td><td><select class="aSel" data-plat-code="' + esc(x.id) + '">' + opt('', '— жоқ —', val) + ps.map(function (p) { return opt(p.shortName, p.shortName + ' — ' + p.nameKz, val); }).join('') + '</select></td></tr>';
+  }).join('');
+  return '<div class="aCard inner"><p><b>Платформадағы пәндер</b> (атауы сәйкес келгендері өзі таңдалды — тексеріңіз):</p><div class="aTableWrap"><table class="aTable"><thead><tr><th>Біздің пән</th><th>Платформадағы пән</th></tr></thead><tbody>' + rows + '</tbody></table></div><div class="aRow"><button class="aBtn primary" type="button" data-a="plat-codes-save">Пән кодтарын сақтау</button></div></div>';
 }
 function cfgInput(el) {
   var p = el.getAttribute('data-cfg'), root = p.indexOf('sap.') === 0 ? AD.sapCfg : AD.platCfg;
@@ -761,11 +776,32 @@ adminEl.addEventListener('click', function (ev) {
   if ((b = t.closest('[data-cfg-del]'))) { AD.sapCfg.agym.splice(+b.getAttribute('data-cfg-del'), 1); renderAdmin(); return; }
   if ((b = t.closest('[data-courses]'))) {
     var code = b.getAttribute('data-courses');
-    api('POST', '/api/import?action=platform-courses', { code: code }).then(function (x) { AD.courses = { code: code, list: x.courses }; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); });
+    var csubj = b.getAttribute('data-courses-subj');
+    api('POST', '/api/import?action=platform-courses', { code: code }).then(function (x) { AD.courses = { code: code, subject: csubj, list: x.courses }; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); });
     return;
+  }
+  if ((b = t.closest('[data-agym-add]'))) {
+    AD.sapCfg.agym.push({ agym: b.getAttribute('data-agym-add'), stream: b.getAttribute('data-agym-stream'), combos: [] });
+    renderAdmin(); toast('Қосылды — комбинациясын белгілеп, «SapaLine баптауын сақтау» басыңыз'); return;
+  }
+  if ((b = t.closest('[data-course]'))) {
+    var ck = b.getAttribute('data-course-key');
+    AD.platCfg.courses[ck] = { courseId: b.getAttribute('data-course'), courseName: b.getAttribute('data-course-name') };
+    AD.platFilter = ck.split('.')[0];
+    renderAdmin(); toast('Курс тіркелді — «Платформа баптауын сақтау» басыңыз'); return;
   }
   if ((b = t.closest('[data-a]'))) {
     var a = b.getAttribute('data-a');
+    if (a === 'plat-subjects') { api('POST', '/api/import?action=platform-subjects', {}).then(function (x) { AD.platSubjects = x.subjects; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); }); return; }
+    if (a === 'plat-codes-save') {
+      var jobs = $$('[data-plat-code]', adminEl).map(function (el) {
+        var sid = el.getAttribute('data-plat-code'), cur = findBy(cat().subjects, sid);
+        if ((cur.platform_code || '') === el.value) return null;
+        return api('POST', '/api/catalog', { kind: 'subjects', item: { id: sid, platform_code: el.value } });
+      }).filter(Boolean);
+      Promise.all(jobs).then(reloadCatalog).then(function () { renderAdmin(); toast('Пән кодтары сақталды: ' + jobs.length); }).catch(function (e) { toast(e.message, 'bad'); });
+      return;
+    }
     if (a === 'site') { closeAdmin(); return; }
     if (a === 'back') {
       var back = function () { AD.ed = null; loadReports().then(renderAdmin); };

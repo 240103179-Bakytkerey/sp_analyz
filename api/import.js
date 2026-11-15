@@ -186,6 +186,16 @@ export default route({
       await requireUser(req, ['admin']);
       return sapalineDiscover({ division: b.division ? String(b.division) : null, periodId: b.periodId || null });
     }
+    if (action === 'platform-subjects') {
+      await requireUser(req, ['admin']);
+      if (!platformConfigured()) throw httpError(503, 'JUZ40_LOGIN / JUZ40_PASSWORD бапталмаған.', 'platform_not_configured');
+      const { listSubjects } = await import('../lib/platform.js');
+      try {
+        return { subjects: await listSubjects() };
+      } catch (e) {
+        throw httpError(502, e.message, 'platform_error');
+      }
+    }
     if (action === 'platform-courses') {
       await requireUser(req, ['admin']);
       if (!platformConfigured()) throw httpError(503, 'JUZ40_LOGIN / JUZ40_PASSWORD бапталмаған.', 'platform_not_configured');
