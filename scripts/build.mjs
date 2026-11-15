@@ -14,10 +14,27 @@ function emblem(file) {
 }
 const EMBLEM = { geometry: emblem('src/emblems/geometry.svg'), math: emblem('src/emblems/math.svg'), juz40: emblem('src/emblems/juz40.svg') };
 
+// SapaLine пән логолары (src/logos/*.svg): түсті фон алынып, ақ таңба currentColor-ға айналады —
+// бет оны пәннің өз түсіндегі плиткаға салады. id-лер қайталанбауы үшін префикс қосылады.
+const LOGOS = {};
+for (const f of fs.readdirSync(path.join(ROOT, 'src/logos'))) {
+  if (!f.endsWith('.svg')) continue;
+  const key = f.slice(0, -4), svg = rd('src/logos/' + f);
+  const vb = svg.match(/viewBox="([^"]+)"/)[1];
+  const bg = (svg.match(/<rect[^>]*fill="(#[0-9A-Fa-f]{3,8})"/) || [])[1];
+  let inner = svg.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')
+    .replace(/<rect[^>]*fill="#[0-9A-Fa-f]{3,8}"[^>]*\/>/, '')
+    .replace(/(fill|stroke)="(white|#fff|#ffffff|#FFE0BF|#010101)"/gi, '$1="currentColor"')
+    .replace(/id="([^"]+)"/g, `id="lg-${key}-$1"`).replace(/url\(#([^)]+)\)/g, `url(#lg-${key}-$1)`)
+    .replace(/\s*\n\s*/g, '');
+  if (bg) inner = inner.replace(new RegExp(`fill="${bg}"`, 'gi'), 'fill="none"');
+  LOGOS[key] = { vb, inner, color: bg || null };
+}
+
 // calc.js: export сөздері алынып, беттің ішкі функцияларына айналады
 const CALC = rd('lib/calc.js').replace(/^export (function|const) /gm, '$1 ');
 if (/^\s*(import|export)\b/m.test(CALC)) throw new Error('calc.js must not import/export anything else');
-const consts = 'var EMBLEM = ' + JSON.stringify(EMBLEM) + ';';
+const consts = 'var EMBLEM = ' + JSON.stringify(EMBLEM) + ';\nvar LOGOS = ' + JSON.stringify(LOGOS) + ';';
 const APP = '(function () {\n\'use strict\';\n' + consts + '\n' + CALC + '\n' + rd('src/app.js') + '\n' + rd('src/admin.js') + '\n})();';
 new Function(APP); // syntax check
 const CSS = rd('src/styles.css');

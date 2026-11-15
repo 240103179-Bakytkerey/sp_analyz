@@ -7,7 +7,10 @@
       "short": "Физ",
       "glyph": "F",
       "glyphs": "F=ma v a t g λ Ω E Δt ∑F N J W ħ ν ρ",
-      "sort": 1
+      "sort": 1,
+      "sapaline_code": "physics",
+      "logo": "physics",
+      "color": "#863E98"
     },
     {
       "id": "toefl",
@@ -15,7 +18,10 @@
       "short": "TOEFL",
       "glyph": "Aa",
       "glyphs": "A b C d e F g H i j K l M n o P q R s T u V w X y Z",
-      "sort": 2
+      "sort": 2,
+      "sapaline_code": "toefl",
+      "logo": "toefl",
+      "color": "#FF5678"
     },
     {
       "id": "informatics",
@@ -23,7 +29,10 @@
       "short": "Инф",
       "glyph": "</>",
       "glyphs": "0 1 { } ; if for while == && || def int bit 0x <> []",
-      "sort": 3
+      "sort": 3,
+      "sapaline_code": "informatics",
+      "logo": "informatics",
+      "color": "#17404E"
     },
     {
       "id": "law",
@@ -31,7 +40,10 @@
       "short": "Құқ",
       "glyph": "§",
       "glyphs": "§ ¶ ст. ҚР бап заң № ⅰ ⅱ ⅲ",
-      "sort": 4
+      "sort": 4,
+      "sapaline_code": "law",
+      "logo": "law",
+      "color": "#007069"
     },
     {
       "id": "kaz_lit",
@@ -39,7 +51,10 @@
       "short": "Қаз әдеб",
       "glyph": "Әд",
       "glyphs": "Абай өлең жыр ақын роман « » — ! ?",
-      "sort": 5
+      "sort": 5,
+      "sapaline_code": "adebiet",
+      "logo": "adebiet",
+      "color": "#BB8E52"
     },
     {
       "id": "kaz_lang",
@@ -47,7 +62,10 @@
       "short": "Қаз тілі",
       "glyph": "Ә",
       "glyphs": "ә ғ қ ң ө ұ ү һ і Ә Ғ Қ Ң Ө Ұ Ү",
-      "sort": 6
+      "sort": 6,
+      "sapaline_code": "til",
+      "logo": "til",
+      "color": "#B64861"
     },
     {
       "id": "rus_lit",
@@ -55,7 +73,10 @@
       "short": "Орыс әдеб",
       "glyph": "Лит",
       "glyphs": "стих роман поэт « » — ! ? ё",
-      "sort": 7
+      "sort": 7,
+      "sapaline_code": "literature",
+      "logo": "literature",
+      "color": "#A16321"
     },
     {
       "id": "rus_lang",
@@ -63,7 +84,10 @@
       "short": "Орыс тілі",
       "glyph": "Ё",
       "glyphs": "а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я",
-      "sort": 8
+      "sort": 8,
+      "sapaline_code": "russian",
+      "logo": "russian",
+      "color": "#5364AF"
     },
     {
       "id": "math",
@@ -71,7 +95,10 @@
       "short": "Мат",
       "glyph": "∑",
       "glyphs": "0 1 2 3 4 5 6 7 8 9 + − × ÷ = ≠ ≤ ≥ √ ∑ π ∞ ∫ x y f log sin cos % ² ³ Δ λ",
-      "sort": 9
+      "sort": 9,
+      "sapaline_code": "math",
+      "logo": "math",
+      "color": "#1B36B0"
     },
     {
       "id": "geometry",
@@ -79,7 +106,10 @@
       "short": "Геом",
       "glyph": "△",
       "glyphs": "△ ∠ ⊥ ∥ ○ ° π R r S a b c h α β γ ≅ ∼ ⌒ ◇ □ sin cos tg 90° 60° 45° AB",
-      "sort": 10
+      "sort": 10,
+      "sapaline_code": "geometry",
+      "logo": "geometry",
+      "color": "#00998A"
     },
     {
       "id": "biology",
@@ -87,7 +117,10 @@
       "short": "Био",
       "glyph": "ДНҚ",
       "glyphs": "ДНҚ РНҚ АТФ C₆H₁₂O₆ O₂ CO₂ 2n n XX XY Aa",
-      "sort": 11
+      "sort": 11,
+      "sapaline_code": "biology",
+      "logo": "biology",
+      "color": "#008240"
     },
     {
       "id": "world_history",
@@ -95,7 +128,10 @@
       "short": "Дүн. тарих",
       "glyph": "Ⅸ",
       "glyphs": "Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ ғ. б.з.д.",
-      "sort": 12
+      "sort": 12,
+      "sapaline_code": "djt",
+      "logo": "djt",
+      "color": "#F07436"
     },
     {
       "id": "geography",
@@ -103,7 +139,10 @@
       "short": "Геогр",
       "glyph": "N",
       "glyphs": "N S E W ° ′ ″ км м³ ‰ ↑ ↓ ⇡",
-      "sort": 13
+      "sort": 13,
+      "sapaline_code": "geography",
+      "logo": "geography",
+      "color": "#00427B"
     },
     {
       "id": "chemistry",
@@ -111,7 +150,10 @@
       "short": "Хим",
       "glyph": "H₂O",
       "glyphs": "H He Li C N O Na Cl Fe ⇌ → H₂O CO₂ pH mol H₂SO₄ NaCl e⁻",
-      "sort": 14
+      "sort": 14,
+      "sapaline_code": "chemistry",
+      "logo": "chemistry",
+      "color": "#007EFF"
     },
     {
       "id": "math_lit",
@@ -119,7 +161,10 @@
       "short": "Мат сауат",
       "glyph": "%",
       "glyphs": "% ‰ 1 2 3 4 5 6 7 8 9 0 + − × ÷ =",
-      "sort": 15
+      "sort": 15,
+      "sapaline_code": "ms",
+      "logo": "ms",
+      "color": "#00A3B6"
     },
     {
       "id": "kz_history",
@@ -127,7 +172,10 @@
       "short": "ҚР тарихы",
       "glyph": "ҚТ",
       "glyphs": "Ⅰ Ⅱ Ⅲ Ⅴ Ⅹ ғ. хан би жүз",
-      "sort": 16
+      "sort": 16,
+      "sapaline_code": "tarih",
+      "logo": "tarih",
+      "color": "#AE2A00"
     }
   ],
   "streams": [

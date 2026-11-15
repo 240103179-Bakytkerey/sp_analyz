@@ -22,7 +22,7 @@
   --shadow:#06113f; --frost:#f3f8ff; --z1:#f6faff; --z2:#c9e1ff; --z3:#86b4ff; --zdepth:#4a72d8;
   --a-fg:#e8f0ff; --a-acc:#93c2ff; --a-ink:#0d1a52; --deep:#0d1a52;
 }
-[data-subj="geo"]{
+[data-subj="geometry"]{
   --d-bg:#00998a; --d-fg:#ffffff; --d-acc:#c3fcf2; --d-acctext:#ffffff; --d-chip:#005a51;
   --l-bg:#c3fcf2; --l-fg:#005a51; --l-acc:#00998a; --l-chip:#c3fcf2;
   --glow:#59d0bf; --amb-d:color-mix(in oklab,#c3fcf2 14%,transparent); --amb-l:color-mix(in oklab,#59d0bf 46%,transparent); --veil:color-mix(in oklab,#00302a 36%,transparent);
@@ -190,8 +190,8 @@ button{font:inherit;color:inherit}
 .photoEmpty b{position:relative;font-family:var(--font-display);font-size:clamp(48px,7vw,84px);letter-spacing:-.04em;color:var(--accc)}
 .photoEmpty span{position:relative;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:color-mix(in oklab,var(--fgc) 55%,transparent)}
 
-[data-subj="geo"] .act[data-theme="dark"] :is(.pctCap,.voteLabel,.meta,.analysis,.pill.ghost,.outroEyebrow,.outroText,.outroStat,.footText,.emptyNote,.lede,.cueText){color:var(--fgc)}
-[data-subj="geo"] .act[data-theme="dark"] .pill.ghost{border-color:color-mix(in oklab,var(--d-acc) 60%,transparent)}
+[data-subj="geometry"][data-theme="dark"] :is(.pctCap,.voteLabel,.meta,.analysis,.pill.ghost,.outroEyebrow,.outroText,.outroStat,.footText,.emptyNote,.lede,.cueText){color:var(--fgc)}
+[data-subj="geometry"][data-theme="dark"] .pill.ghost{border-color:color-mix(in oklab,var(--d-acc) 60%,transparent)}
 /* ---------- intro ---------- */
 .act.intro .flow{display:flex;flex-direction:column;justify-content:flex-end;gap:8px;z-index:1;padding-bottom:clamp(56px,9vh,96px)}
 .introRing{position:absolute;top:50%;right:-4%;width:62vw;height:62vw;max-width:900px;max-height:900px;border-radius:999px;border:1px solid color-mix(in oklab,var(--cyan) 16%,transparent);transform:translateY(-50%) scale(calc(.72 + var(--a) * .28));opacity:calc(var(--a) * .9);-webkit-mask-image:linear-gradient(#0000,#000 28% 72%,#0000);mask-image:linear-gradient(#0000,#000 28% 72%,#0000)}
@@ -703,4 +703,66 @@ code{font-size:12px}
   .weeks{grid-column:2/-1;grid-row:3;justify-self:end;max-width:100%}
   .act .flow{padding-top:150px}
   .act.intro .zmark,.act.intro .zmark.glyph{height:15vh;top:150px;right:var(--pad);opacity:calc(var(--e) * .55)}
+}
+
+/* ================= SapaLine пән плиткалары ================= */
+.tile{display:inline-grid;place-items:center;flex:none;aspect-ratio:1;border-radius:28%;background:var(--tile,#1b36b0);color:#fff;overflow:hidden;
+  box-shadow:inset 0 1px 0 color-mix(in oklab,#fff 30%,transparent),0 0 0 1px color-mix(in oklab,#fff 14%,transparent)}
+.tile svg{width:100%;height:100%;display:block}
+.tile b{font-family:var(--font-display);font-size:.5em;color:#fff}
+.subjPick .pickEm{width:24px;height:24px;border-radius:30%}
+.pickItem .pickEm{width:34px;height:34px}
+.pickItem[aria-pressed="true"] .pickEm{box-shadow:0 0 0 2px #fff}
+.rosterPh[style*="--tile:#"]{background:var(--tile)}
+.rosterPh[style*="--tile:#"] b{color:#fff}
+.curtainZ .curtainTile{width:100%;height:auto;border-radius:24%}
+.curtain:not([data-mode="finale"]) .curtainZ{aspect-ratio:1;height:28vh}
+/* subject hero: large SapaLine tile */
+.zmark.tileMark{aspect-ratio:1;height:min(46vh,52%)}
+.heroTile{position:absolute;inset:9%;width:auto;border-radius:27%;
+  background:linear-gradient(150deg,color-mix(in oklab,var(--tile) 78%,#fff) 0%,var(--tile) 46%,color-mix(in oklab,var(--tile) 70%,#000) 100%);
+  box-shadow:0 40px 80px -30px color-mix(in oklab,var(--shadow) 90%,transparent),inset 0 2px 0 color-mix(in oklab,#fff 45%,transparent),0 0 0 1.5px color-mix(in oklab,#fff 30%,transparent);
+  animation:zfloat 11s var(--wave) infinite}
+.heroTile svg{filter:drop-shadow(0 10px 18px color-mix(in oklab,#000 28%,transparent))}
+.heroTile.ghost{transform:translate(9%,7%);background:none;box-shadow:none;border:1.5px solid color-mix(in oklab,var(--d-fg) 30%,transparent);animation:zfloat 12.5s var(--wave) -2.4s infinite;inset:9%;translate:9% 7%}
+.heroTile::after{content:"";position:absolute;inset:-40% -60%;pointer-events:none;transform:translate(-115%);background:linear-gradient(104deg,#0000 40%,color-mix(in oklab,#fff 30%,transparent) 50%,#0000 60%);animation:cardShine 6.4s var(--ease) infinite}
+.heroTile.ghost::after{display:none}
+/* all subjects: 16 subjects orbiting the SMART PRO mark */
+@property --spin{syntax:"<angle>";inherits:true;initial-value:0deg}
+.orbitWrap{--R:min(19vw,262px);position:absolute;z-index:0;pointer-events:none;right:calc(var(--pad) - 1vw);top:52%;width:calc(var(--R) * 2.5);aspect-ratio:1;translate:0 -50%;
+  --e:clamp(0,(var(--a) - .08) * 2,1);opacity:var(--e);scale:calc(.86 + var(--e) * .14)}
+.orbitGlow{position:absolute;inset:4%;border-radius:999px;filter:blur(30px);background:radial-gradient(closest-side,color-mix(in oklab,var(--glow) 34%,transparent),#0000 72%);animation:zglow 7.4s var(--ease) infinite}
+.orbit{position:absolute;inset:0;perspective:1500px;animation:orbitSpin 64s linear infinite}
+@keyframes orbitSpin{to{--spin:360deg}}
+.orbitPlane{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(64deg) rotateZ(var(--spin))}
+.orbitLine{position:absolute;left:50%;top:50%;width:calc(var(--R) * 2);aspect-ratio:1;translate:-50% -50%;border-radius:50%;border:1px solid color-mix(in oklab,var(--d-fg) 26%,transparent)}
+.orbitLine.two{width:calc(var(--R) * 2.36);border-style:dashed;border-color:color-mix(in oklab,var(--d-fg) 12%,transparent)}
+.oSlot{--ang:calc(var(--i) / var(--n) * 360deg);position:absolute;left:50%;top:50%;width:calc(var(--R) * .34);aspect-ratio:1;margin:calc(var(--R) * -.17) 0 0 calc(var(--R) * -.17);transform-style:preserve-3d;
+  transform:rotateZ(var(--ang)) translateX(var(--R)) rotateZ(calc(-1 * var(--ang) - var(--spin))) rotateX(-64deg)}
+.oTile{width:100%;height:100%;box-shadow:0 14px 26px -12px color-mix(in oklab,var(--shadow) 90%,transparent),inset 0 1px 0 color-mix(in oklab,#fff 35%,transparent);
+  filter:brightness(calc(.72 + .28 * sin(var(--ang) + var(--spin))))}
+.orbitCore{position:absolute;left:50%;top:50%;width:calc(var(--R) * .78);aspect-ratio:1;translate:-50% -56%}
+.coreTile{width:100%;height:100%;border-radius:26%;animation:zfloat 11s var(--wave) infinite;
+  background:linear-gradient(150deg,#e3cc9f 0%,#c2a36d 48%,#8b7142 100%);
+  box-shadow:0 34px 70px -24px color-mix(in oklab,var(--shadow) 95%,transparent),inset 0 2px 0 color-mix(in oklab,#fff 50%,transparent),0 0 0 1.5px color-mix(in oklab,#fff 35%,transparent)}
+.coreTile::after{content:"";position:absolute;inset:-40% -60%;pointer-events:none;transform:translate(-115%);background:linear-gradient(104deg,#0000 40%,color-mix(in oklab,#fff 40%,transparent) 50%,#0000 60%);animation:cardShine 6.4s var(--ease) infinite}
+.act.intro .hero{max-width:10.5ch;font-size:clamp(48px,8.6vw,140px)}
+.act.intro .flow{position:relative;z-index:1}
+@media (max-width:760px){
+  .orbitWrap{--R:min(30vw,150px);right:auto;left:50%;top:150px;translate:-50% 0}
+  .act.intro .zmark.tileMark{height:20vh;top:160px;right:var(--pad);opacity:calc(var(--e) * .9)}
+}
+@media (prefers-reduced-motion:reduce){.orbit{animation:none;--spin:18deg}}
+/* orbit: spacing so it never sits on the title */
+.orbitWrap{--R:min(16.5vw,250px);right:calc(var(--pad) - 4vw);width:calc(var(--R) * 2.7)}
+.orbitPlane{transform:rotateX(60deg) rotateZ(var(--spin))}
+.oSlot{width:calc(var(--R) * .3);margin:calc(var(--R) * -.15) 0 0 calc(var(--R) * -.15);transform:rotateZ(var(--ang)) translateX(var(--R)) rotateZ(calc(-1 * var(--ang) - var(--spin))) rotateX(-60deg)}
+.orbitCore{width:calc(var(--R) * .72)}
+.act.intro:has(.orbitWrap) .hero{font-size:clamp(46px,7.2vw,120px)}
+@media (max-width:1100px) and (min-width:761px){.orbitWrap{opacity:calc(var(--e) * .55)}}
+@media (max-width:760px){
+  .orbitWrap{--R:min(27vw,112px);top:150px;width:calc(var(--R) * 2.7)}
+  .root[data-anon] .orbitWrap{top:72px}
+  .act.intro:has(.orbitWrap) .flow{padding-top:calc(150px + min(27vw,112px) * 2.7 + 8px);justify-content:flex-start}
+  .root[data-anon] .act.intro:has(.orbitWrap) .flow{padding-top:calc(72px + min(27vw,112px) * 2.7 + 8px)}
 }

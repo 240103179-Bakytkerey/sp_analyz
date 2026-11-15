@@ -21,6 +21,14 @@ const subjects = [
   ['kz_history', 'Қазақстан тарихы', 'ҚР тарихы', 'ҚТ', 'Ⅰ Ⅱ Ⅲ Ⅴ Ⅹ ғ. хан би жүз'],
 ];
 
+// SapaLine-дағы пән slug-ы мен ресми түсі (sapaline.app пәндер анықтамалығынан). TOEFL логосы — SapaLine-дағы ағылшын тілінікі.
+const BRAND = {
+  math: ['math', '#1B36B0'], geometry: ['geometry', '#00998A'], physics: ['physics', '#863E98'], chemistry: ['chemistry', '#007EFF'],
+  biology: ['biology', '#008240'], geography: ['geography', '#00427B'], informatics: ['informatics', '#17404E'], kz_history: ['tarih', '#AE2A00'],
+  world_history: ['djt', '#F07436'], law: ['law', '#007069'], math_lit: ['ms', '#00A3B6'], kaz_lang: ['til', '#B64861'],
+  kaz_lit: ['adebiet', '#BB8E52'], toefl: ['toefl', '#FF5678'], rus_lang: ['russian', '#5364AF'], rus_lit: ['literature', '#A16321'],
+};
+
 const streams = [['sp1', 'SMART PRO-1', 'SP-1'], ['sp2', 'SMART PRO-2', 'SP-2'], ['sp3', 'SMART PRO-3', 'SP-3']];
 
 // Пән → [SMART PRO-1, SMART PRO-2, SMART PRO-3]
@@ -66,7 +74,7 @@ for (const [sid] of subjects) {
 
 const catalog = {
   note: 'Бастапқы анықтамалық. Дерекқор бос болғанда бір рет жүктеледі; кейін әкімші бөлімінде өзгертіледі.',
-  subjects: subjects.map(([id, name, short, glyph, glyphs], i) => ({ id, name, short, glyph, glyphs, sort: i + 1 })),
+  subjects: subjects.map(([id, name, short, glyph, glyphs], i) => ({ id, name, short, glyph, glyphs, sort: i + 1, sapaline_code: BRAND[id][0], logo: BRAND[id][0], color: BRAND[id][1] })),
   streams: streams.map(([id, name, short], i) => ({ id, name, short, sort: i + 1 })),
   combinations: [
     { id: 'c_bh', code: 'БХ', name: 'Биология – Химия', sort: 1 },

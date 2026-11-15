@@ -15,7 +15,9 @@ import { parseTelegram } from '../lib/telegram.js';
 const EDITORS = ['admin', 'mentor'];
 
 async function sapCfg() {
-  return (await getMapping('sapaline', 'config')) || { divisions: {}, agym: [], understandingKeys: {} };
+  // Әдепкі division: SapaLine веб-қосымшасының бөлімдер тізіміндегі SMART PRO slug-ы («smart_pro»).
+  // Үш ағым бір division-да болса, ағымдар SapaLine «stream» коды бойынша ажыратылады (баптаудағы ағым кодтары).
+  return (await getMapping('sapaline', 'config')) || { divisions: { sp1: 'smart_pro', sp2: 'smart_pro', sp3: 'smart_pro' }, agym: [], understandingKeys: {} };
 }
 async function platCfg() {
   return (await getMapping('platform', 'config')) || { courses: {}, groups: {}, hardTaskLimit: 10 };
