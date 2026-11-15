@@ -11,16 +11,16 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 export default route({
   async GET(req) {
     const kind = dbKind();
-    let user = null, dbOk = true, dbMessage = null, users = null;
+    let user = null, dbOk = true, dbMessage = null;
     try {
       const d = await db();
+      await d.query('select 1');
       user = publicUser(await currentUser(req));
-      users = (await d.query('select count(*)::int as n from users')).rows[0].n;
     } catch (e) {
       dbOk = false;
       dbMessage = e && e.expose ? e.message : 'Дерекқорға қосылу мүмкін болмады.';
     }
-    return { db: kind, dbOk, dbMessage, publicView: publicView(), hasUsers: users == null ? null : users > 0, user };
+    return { db: kind, dbOk, dbMessage, publicView: publicView(), user };
   },
   async POST(req, res) {
     const ip = clientIp(req);

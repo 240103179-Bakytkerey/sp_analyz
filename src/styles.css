@@ -803,3 +803,62 @@ code{font-size:12px}
   .act.teacher .photoFloat{width:min(52%,210px)}
   .act.teacher .photoFrame{height:auto}
 }
+
+/* ===== QA түзетулері ===== */
+/* L4: бос орынсыз ұзын атау қиылмасын */
+.name{overflow-wrap:anywhere}
+/* M3: ашық панельдердегі әлсіз мәтіндердің контрасты (WCAG AA ≥ 4,5) */
+.act[data-theme="light"] :is(.rosterCode,.rosterHint,.rosterEyebrow,.rosterNum,.rosterMetrics,.pctCap,.meta,.voteLabel,.blockTitle,.comboLabel,.attendanceDetail,.emptyNote,.outroText,.outroEyebrow,.outroStat,.footText,.dyn small,.optN,.taskPct,.ackHint,.sharedNote){color:color-mix(in oklab,var(--fgc) 90%,#000)}
+.act[data-theme="light"] .rosterGroup span{color:color-mix(in oklab,var(--fgc) 90%,#000)}
+.eyebrow{color:color-mix(in oklab,var(--d-acctext) 55%,#fff)}
+/* M4: экраннан тыс бөлімдер мен орбитаның анимациясы тоқтайды */
+.act[data-off] *,.act[data-off] *::before,.act[data-off] *::after{animation-play-state:paused!important}
+.lazyNote{opacity:.8}
+/* M2: телефондағы тақырып жолағы — пән мен апталар қабаттаспайды; «Барлығы» → «Бәрі» */
+.segBtn .short{display:none}
+@media (max-width:760px){
+  .subjWrap{grid-column:1;grid-row:3;max-width:48vw}
+  .subjPick{max-width:48vw}
+  .weeks{grid-column:2/-1;grid-row:3;justify-self:end;max-width:100%;min-width:0}
+  .act .flow{padding-top:calc(var(--hdrH,128px) + 22px)}
+  .orbitWrap,.root[data-anon] .orbitWrap{top:calc(var(--hdrH,128px) + 16px)}
+  .act.intro:has(.orbitWrap) .flow,.root[data-anon] .act.intro:has(.orbitWrap) .flow{padding-top:calc(var(--hdrH,128px) + 24px + min(27vw,112px) * 2.7)}
+  .act.intro .zmark.tileMark{top:calc(var(--hdrH,128px) + 24px)}
+}
+@media (max-width:380px){
+  #streamNav .segBtn[data-stream="all"]{display:inline-block}
+  .segBtn .full{display:none}.segBtn .short{display:inline}
+  .segBtn{padding:5px 7px;font-size:9.5px;letter-spacing:.04em}
+}
+/* L8: саусақпен басылатын элементтер кемі 36px */
+@media (pointer:coarse){
+  .segBtn,.weekBtn,.adminBtn,.subjPick,.comboBtn,.linkBtn,.aBtn{min-height:36px}
+  .segBtn,.weekBtn{display:inline-flex;align-items:center}
+}
+.aBtn[disabled]{opacity:.55;cursor:progress}
+/* M4: орбита compositor-да айналады (негізгі ағынды жүктемейді): жазықтық пен плиткалар transform анимациясымен */
+.orbit{animation:none}
+@keyframes orbitPlaneSpin{from{transform:rotateX(60deg) rotateZ(0deg)}to{transform:rotateX(60deg) rotateZ(360deg)}}
+@keyframes orbitSlotSpin{from{transform:rotateZ(var(--ang)) translateX(var(--R)) rotateZ(calc(-1 * var(--ang))) rotateX(-60deg)}to{transform:rotateZ(var(--ang)) translateX(var(--R)) rotateZ(calc(-1 * var(--ang) - 360deg)) rotateX(-60deg)}}
+.orbitPlane{animation:orbitPlaneSpin 64s linear infinite}
+.oSlot{animation:orbitSlotSpin 64s linear infinite}
+.oTile{filter:none}
+.eyebrow{color:color-mix(in oklab,var(--d-acctext) 35%,#fff)}
+@media (prefers-reduced-motion:reduce){.orbitPlane,.oSlot{animation:none}}
+/* Компьютер/планшет: тақырып жолағы бір қатарда; апталар көбейсе, тізімнің өзі жылжиды (батырмалар төменге түспейді) */
+@media (min-width:761px){
+  .hdr{flex-wrap:nowrap}
+  .weeks{flex:0 1 auto}
+  .seg,.subjWrap,#userBtn,.hdrMark{flex-shrink:0}
+}
+/* Планшет / шағын ноутбук (761–1100px): тақырып жолағы екі қатар — бәрі көрінеді, ештеңе қабаттаспайды */
+@media (min-width:761px) and (max-width:1100px){
+  .hdr{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:8px 12px}
+  .hdrMark{grid-column:1;grid-row:1}
+  #typeNav{grid-column:2;grid-row:1}
+  #streamNav{grid-column:3;grid-row:1;justify-self:start}
+  #userBtn{grid-column:4;grid-row:1}
+  .subjWrap{grid-column:1/3;grid-row:2;justify-self:start}
+  .weeks{grid-column:3/-1;grid-row:2;justify-self:end;max-width:100%;min-width:0;margin-left:0}
+  .act .flow{padding-top:calc(var(--hdrH,100px) + 26px)}
+}

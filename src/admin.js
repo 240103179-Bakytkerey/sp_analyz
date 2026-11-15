@@ -49,6 +49,18 @@ function confirmBox(title, text, buttons) {
 }
 function errText(e) { return e.body && e.body.details ? e.message : e.message; }
 
+/** Бір әрекет аяқталғанша қайта басуды елемеу (екі рет басу → екі сұраныс болмасын). Батырмалар уақытша өшіріледі. */
+var busy = {};
+function guarded(key, fn) {
+  if (busy[key]) return;
+  busy[key] = true;
+  var btns = $$('.aBar .aBtn, [data-imp], [data-cat-save], [data-a="user-save"]', adminEl);
+  btns.forEach(function (x) { x.disabled = true; });
+  var done = function () { busy[key] = false; $$('.aBar .aBtn, [data-imp], [data-cat-save], [data-a="user-save"]', adminEl).forEach(function (x) { x.disabled = false; }); };
+  var p;
+  try { p = fn(); } catch (e) { done(); throw e; }
+  Promise.resolve(p).then(done, done);
+}
 window.__adminDirty = function () { return !!(AD.ed && AD.ed.dirty); };
 window.addEventListener('beforeunload', function (ev) { if (AD.ed && AD.ed.dirty) { ev.preventDefault(); ev.returnValue = ''; } });
 
@@ -378,10 +390,12 @@ function saveReport(publish, force) {
     renderAdmin();
   }).catch(function (e) {
     if (e.status === 409 && e.body && e.body.error === 'exists' && e.body.reportId) {
+      renderAdmin(); // алдыңғы қате карточкасы экранда қалмасын
       return confirmBox('Мұндай есеп бар', e.message, [['open', 'Бар есепті ашу', 'primary'], ['no', 'Болдырмау']]).then(function (a) { if (a === 'open') openReport(e.body.reportId); });
     }
     if (e.status === 409 && e.body && e.body.current) {
       var cur = e.body.current;
+      renderAdmin();
       return confirmBox('Қатар өңдеу', e.message + '\n\nСоңғы нұсқа: ' + cur.version + ' (' + (cur.updated_by || '') + ', ' + fmtDate(cur.updated_at) + ').', [['mine', 'Менің нұсқамды сақтау (соңғының үстіне)', 'danger'], ['theirs', 'Жаңа нұсқаны ашу (менің өзгерісім жойылады)', 'primary'], ['cancel', 'Болдырмау']]).then(function (a) {
         if (a === 'mine') return saveReport(publish, cur.version);
         if (a === 'theirs') { setEditor(cur); renderAdmin(); }
@@ -579,7 +593,7 @@ function saveCat(key) {
     var tr = $('tr[data-row="' + key + '"]', adminEl); item.id = tr.getAttribute('data-id');
     if (kind === 'subjects') { var cur = findBy(cat().subjects, item.id); item.max_scores = Object.assign({}, cur.max_scores || {}, item.max_scores || {}); }
   }
-  api('POST', '/api/catalog', { kind: kind, item: item }).then(function () { return reloadCatalog(); }).then(function () { renderAdmin(); toast('Сақталды'); }).catch(function (e) { toast(e.message, 'bad'); });
+  return api('POST', '/api/catalog', { kind: kind, item: item }).then(function () { return reloadCatalog(); }).then(function () { renderAdmin(); toast('Сақталды'); }).catch(function (e) { toast(e.message, 'bad'); });
 }
 function uploadPhoto(input) {
   var file = input.files && input.files[0]; if (!file) return;
@@ -604,21 +618,21 @@ function usersHTML() {
   return '<div class="aCard"><h3>' + (u.id ? 'Аккаунтты өзгерту: ' + esc(u.username) : 'Жаңа аккаунт') + '</h3><p class="aHint">Әр адамға жеке аккаунт. Көруші — жарияланған есептерді көреді; ментор — есеп енгізеді; әкімші — бәрі. Нақты аккаунттарды тек әкімші жасайды.</p>' +
     '<div class="aRow"><label class="aField"><span>Логин</span><input class="aIn" name="u-username" value="' + esc(u.username || '') + '" autocomplete="off"></label><label class="aField"><span>Аты-жөні</span><input class="aIn" name="u-display" value="' + esc(u.displayName || '') + '"></label>' +
     sel('', u.role, [['viewer', 'Көруші (мұғалім / команда)'], ['mentor', 'Ментор'], ['admin', 'Әкімші']], { label: 'Рөлі', name: 'u-role' }) +
-    sel('', u.teacherId || '', [['', '— мұғалімге байланыссыз —']].concat(cat().teachers.map(function (t) { return [t.id, t.full_name]; })), { label: 'Мұғалім профилі', name: 'u-teacher' }) +
+
     '<label class="aField"><span>' + (u.id ? 'Жаңа құпиясөз (бос — өзгермейді)' : 'Құпиясөз (кемі 8 таңба)') + '</span><input class="aIn" name="u-password" type="password" autocomplete="new-password"></label>' +
     '<label class="aCheck"><input type="checkbox" name="u-active"' + (u.active !== false ? ' checked' : '') + '>Белсенді</label></div>' +
     '<p class="aSrc">Ментордың рұқсат аумағы (бос — шектеусіз): ағымдар ' + chk('u-sc-streams', (u.scope || {}).streams, cat().streams.map(function (s) { return [s.id, s.short]; })) + ' · түрлер ' + chk('u-sc-types', (u.scope || {}).types, [['ls', 'ЛС'], ['st', 'СТ'], ['bt', 'БТ']]) + '</p>' +
     '<details class="aSplit"><summary>Пәндер бойынша шектеу</summary>' + chk('u-sc-subjects', (u.scope || {}).subjects, cat().subjects.map(function (s) { return [s.id, s.name]; })) + '</details>' +
     '<div class="aRow"><button class="aBtn primary" type="button" data-a="user-save">Сақтау</button>' + (u.id ? '<button class="aBtn ghost" type="button" data-a="user-new">Жаңа аккаунт</button>' : '') + '</div></div>' +
-    '<div class="aCard"><h3>Аккаунттар</h3>' + (AD.users.length ? '<div class="aTableWrap"><table class="aTable"><thead><tr><th>Логин</th><th>Аты</th><th>Рөлі</th><th>Мұғалім</th><th>Күйі</th><th></th></tr></thead><tbody>' + AD.users.map(function (x) {
-      return '<tr><td>' + esc(x.username) + '</td><td>' + esc(x.displayName) + '</td><td>' + esc(ROLE_NAME[x.role]) + '</td><td>' + esc(x.teacherId ? teacherName(x.teacherId) : '—') + '</td><td>' + (x.active ? '<span class="chip on">белсенді</span>' : '<span class="chip">өшірілген</span>') + '</td><td><button class="aBtn" type="button" data-user="' + esc(x.id) + '">Өзгерту</button></td></tr>';
+    '<div class="aCard"><h3>Аккаунттар</h3>' + (AD.users.length ? '<div class="aTableWrap"><table class="aTable"><thead><tr><th>Логин</th><th>Аты</th><th>Рөлі</th><th>Күйі</th><th></th></tr></thead><tbody>' + AD.users.map(function (x) {
+      return '<tr><td>' + esc(x.username) + '</td><td>' + esc(x.displayName) + '</td><td>' + esc(ROLE_NAME[x.role]) + '</td><td>' + (x.active ? '<span class="chip on">белсенді</span>' : '<span class="chip">өшірілген</span>') + '</td><td><button class="aBtn" type="button" data-user="' + esc(x.id) + '">Өзгерту</button></td></tr>';
     }).join('') + '</tbody></table></div>' : '<div class="aEmpty">Аккаунттар жүктелуде…</div>') + '</div>';
 }
 function saveUser() {
   var u = AD.userEdit || {};
   var vals = function (n) { return $$('[name="' + n + '"]:checked', adminEl).map(function (x) { return x.value; }); };
-  var body = { id: u.id, username: impVal('u-username'), displayName: impVal('u-display'), role: impVal('u-role'), teacherId: impVal('u-teacher') || null, password: impVal('u-password') || undefined, active: $('[name="u-active"]', adminEl).checked, scope: { streams: vals('u-sc-streams'), types: vals('u-sc-types'), subjects: vals('u-sc-subjects') } };
-  api('POST', '/api/users', body).then(function () { AD.userEdit = null; AD.usersLoaded = false; renderAdmin(); toast('Аккаунт сақталды'); }).catch(function (e) { toast(e.message, 'bad'); });
+  var body = { id: u.id, username: impVal('u-username'), displayName: impVal('u-display'), role: impVal('u-role'), teacherId: u.teacherId || null, password: impVal('u-password') || undefined, active: $('[name="u-active"]', adminEl).checked, scope: { streams: vals('u-sc-streams'), types: vals('u-sc-types'), subjects: vals('u-sc-subjects') } };
+  return api('POST', '/api/users', body).then(function () { AD.userEdit = null; AD.usersLoaded = false; renderAdmin(); toast('Аккаунт сақталды'); }).catch(function (e) { toast(e.message, 'bad'); });
 }
 
 /* ---------------- settings (import mappings) ---------------- */
@@ -791,9 +805,9 @@ adminEl.addEventListener('click', function (ev) {
   }
   if ((b = t.closest('[data-drop-html]'))) { var tk = AD.ed.data.hardTasks[+b.getAttribute('data-drop-html')]; tk.html = ''; tk.textEdited = true; AD.ed.dirty = true; renderAdmin(); return; }
   if ((b = t.closest('[data-clear-split]'))) { AD.ed.data.lessons[+b.getAttribute('data-clear-split')].split = {}; AD.ed.dirty = true; renderAdmin(); return; }
-  if ((b = t.closest('[data-imp]'))) { runImport(b.getAttribute('data-imp')); return; }
+  if ((b = t.closest('[data-imp]'))) { var ik = b.getAttribute('data-imp'); guarded('import', function () { return runImport(ik); }); return; }
   if ((b = t.closest('[data-cat]'))) { AD.catKind = b.getAttribute('data-cat'); renderAdmin(); return; }
-  if ((b = t.closest('[data-cat-save]'))) { saveCat(b.getAttribute('data-cat-save')); return; }
+  if ((b = t.closest('[data-cat-save]'))) { var ck2 = b.getAttribute('data-cat-save'); guarded('cat', function () { return saveCat(ck2); }); return; }
   if ((b = t.closest('[data-cat-del]'))) {
     var did = b.getAttribute('data-cat-del');
     confirmBox('Өшіру', 'Жазба өшіріледі. Есептерде қолданылса, сервер өшірмейді — оның орнына «белсенді емес» етіңіз.', [['ok', 'Өшіру', 'danger'], ['no', 'Болдырмау']]).then(function (a) {
@@ -863,8 +877,7 @@ adminEl.addEventListener('click', function (ev) {
       else back();
       return;
     }
-    if (a === 'save') { saveReport(false); return; }
-    if (a === 'publish') { saveReport(true); return; }
+    if (a === 'save' || a === 'publish') { guarded('save', function () { return saveReport(a === 'publish'); }); return; }
     if (['preview', 'unpublish', 'delete', 'revisions'].indexOf(a) >= 0) { reportAction(a); return; }
     if (a === 'bt-all-subjects') {
       var sid = AD.ed.isNew ? AD.ed.meta.stream_id : AD.ed.report.stream_id;
@@ -877,7 +890,7 @@ adminEl.addEventListener('click', function (ev) {
       if (!sid) toast('Алдымен ағымды таңдаңыз', 'bad');
       AD.ed.dirty = true; renderAdmin(); return;
     }
-    if (a === 'user-save') { saveUser(); return; }
+    if (a === 'user-save') { guarded('user', saveUser); return; }
     if (a === 'user-new') { AD.userEdit = null; renderAdmin(); return; }
     if (a === 'agym-add') { AD.sapCfg.agym.push({ agym: '', stream: 'sp1', combos: [] }); renderAdmin(); return; }
     if (a === 'sap-save' || a === 'plat-save') {

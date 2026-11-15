@@ -232,8 +232,10 @@ function urlFor(extraHash) {
   if (S.drafts) u.set('drafts', '1');
   return (S.isAdminPath ? '/admin' : '/') + '?' + u.toString() + (extraHash || '');
 }
-function writeURL(hash) {
-  try { history.replaceState(null, '', urlFor(hash == null ? location.hash : hash)); } catch (e) {}
+function writeURL(hash, push) {
+  var url = urlFor(hash == null ? location.hash : hash);
+  // Сүзгіні өзгерту — браузер тарихына жаңа жазба: «Артқа» алдыңғы сүзгіге қайтарады.
+  try { if (push && url !== location.pathname + location.search + location.hash) history.pushState(null, '', url); else history.replaceState(null, '', url); } catch (e) {}
   store.set('sp.type', F.type); store.set('sp.stream', F.stream);
 }
 function cat() { return S.catalog || { subjects: [], streams: [], combinations: [], teachers: [] }; }
@@ -252,7 +254,7 @@ function renderHeader() {
   $('#typeNav').innerHTML = Object.keys(TYPES).map(function (k) {
     return '<button class="segBtn" type="button" data-type="' + k + '" aria-pressed="' + (k === F.type) + '" title="' + esc(TYPES[k].name) + '">' + TYPES[k].short + '</button>';
   }).join('');
-  $('#streamNav').innerHTML = '<button class="segBtn" type="button" data-stream="all" aria-pressed="' + (F.stream === 'all') + '">Барлығы</button>' +
+  $('#streamNav').innerHTML = '<button class="segBtn" type="button" data-stream="all" aria-pressed="' + (F.stream === 'all') + '" aria-label="Барлық ағым"><span class="full">Барлығы</span><span class="short">Бәрі</span></button>' +
     cat().streams.filter(function (s) { return s.active !== false; }).map(function (s) {
       return '<button class="segBtn" type="button" data-stream="' + esc(s.id) + '" aria-pressed="' + (F.stream === s.id) + '" title="' + esc(s.name) + '">' + esc(s.short) + '</button>';
     }).join('');
@@ -268,6 +270,8 @@ function renderHeader() {
   var on = $('.weekBtn[aria-pressed="true"]', box);
   if (on) box.scrollLeft = Math.max(0, on.offsetLeft - box.clientWidth + on.offsetWidth + 8);
   var ub = $('#userBtn');
+  ub.hidden = !S.user && !(S.session && S.session.publicView);
+  syncHeaderHeight();
   if (S.user) {
     ub.innerHTML = KEY_ICON + '<span>' + esc(canEdit() ? (S.user.role === 'admin' ? 'Әкімші' : 'Ментор') : S.user.displayName.split(' ')[0]) + '</span>';
     ub.title = S.user.displayName + ' · ' + ROLE_NAME[S.user.role];
@@ -276,6 +280,11 @@ function renderHeader() {
     ub.title = 'Жүйеге кіру';
   }
   if (window.__adminDirty && window.__adminDirty()) ub.setAttribute('data-dirty', ''); else ub.removeAttribute('data-dirty');
+}
+/** Тақырып жолағының биіктігі (телефонда екі-үш қатар) — мазмұн одан төмен басталады. */
+function syncHeaderHeight() {
+  var h = $('#hdr');
+  if (h) document.documentElement.style.setProperty('--hdrH', Math.ceil(h.getBoundingClientRect().height) + 'px');
 }
 var KEY_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 1a4.5 4.5 0 0 0-4.27 5.92L1 12.15V15h2.85l.65-.65V13h1.35l.65-.65V11h1.35l1.23-1.23A4.5 4.5 0 1 0 10.5 1Zm1.25 4.75a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/></svg>';
 var ROLE_NAME = { admin: 'әкімші', mentor: 'ментор', viewer: 'көруші' };
@@ -350,7 +359,12 @@ function dynChip(dyn, d, opts) {
   var note = d.normalized ? ' · максимал балл өзгерді (' + fmtNum(d.prevMax) + ' → ' + fmtNum(d.curMax) + '), максимумнан үлесі салыстырылды' : d.maxUnknown ? ' · бір кезеңнің максимал балы белгісіз' : '';
   return '<span class="dyn" data-state="' + d.state + '" data-good="' + (d.state === 'same' ? '' : d.good ? '1' : '0') + '"' + (opts.big ? ' data-big' : '') + '>' +
     '<i aria-hidden="true">' + sym + '</i><b>' + esc(fmtDelta(d)) + '</b><span class="dynWord">' + word + '</span>' +
-    '<small>' + esc(since) + ' аптасымен' + esc(note) + '</small></span>';
+    '<small>' + esc(sinceText(since, opts.bt)) + esc(note) + '</small></span>';
+}
+/** «4-ай 4-аптамен салыстырғанда», БТ үшін — «алдыңғы БТ-мен салыстырғанда (10.10.2026)». */
+function sinceText(label, bt) {
+  if (bt) return 'алдыңғы БТ-мен салыстырғанда' + (label ? ' (' + label + ')' : '');
+  return (/апта$/i.test(label) ? label + 'мен' : label + ' кезеңімен') + ' салыстырғанда';
 }
 function flagsHTML(dyn) {
   if (!dyn || !dyn.flags || !dyn.flags.length) return '';
@@ -611,7 +625,8 @@ function stPanel(e, i) {
     }).join('') + '</tbody></table></div>' : '') +
     (F.combo !== 'all' && m.note ? mentorHTML('Комбинация бойынша талдау', m.note) : '') +
     mentorHTML('Комбинациялар бойынша талдау', F.combo === 'all' ? e.data.mentor.combosAnalysis : '') +
-    (tasks.length ? '<div class="tasks"><p class="blockTitle">Қиын болған тапсырмалар <small>' + tasks.length + '</small></p>' + tasks.map(taskHTML).join('') + '</div>' : '') +
+    (tasks.length ? '<div class="tasks"><p class="blockTitle">Қиын болған тапсырмалар <small>' + tasks.length + '</small></p>' + tasks.map(taskHTML).join('') + '</div>'
+      : e.data.hardTasks === null && e.data.taskCount ? '<div class="tasks" data-lazy-tasks="' + esc(e.id) + '"><p class="blockTitle">Қиын болған тапсырмалар <small>' + e.data.taskCount + '</small></p><p class="meta lazyNote">Жүктелуде…</p></div>' : '') +
     (e.data.topics && e.data.topics.length ? '<p class="meta">Тақырыптар: ' + e.data.topics.map(esc).join(' · ') + '</p>' : '') +
     mentorHTML('Мұғалімге қорытынды', e.data.mentor.summary) + mentorHTML('Келесі аптаға ұсыныс', e.data.mentor.recommendation, 'tips') +
     metaLine(e) + ackInline(e) + '</div>' + photoHTML(e.teacher, e.subject, i);
@@ -639,7 +654,7 @@ function btOverallAct(b, i) {
     (b.draft ? '<span class="pill draftPill">Жоба · жарияланбаған</span>' : '') + (b.demo ? '<span class="pill demoPill">Демо деректер</span>' : '') + '</div>' +
     '<h2 class="name">' + esc(b.stream.short) + (b.scope ? ' <i>|</i> ' + esc(b.scope.code) : '') + ' <i>|</i> Жалпы нәтиже</h2>' +
     '<div class="pctRow"><span class="pctNum">' + fmtNum(o.avg) + '</span><span class="pctSign">' + (isNum(o.max) ? '/' + fmtNum(o.max) : '') + '</span><span class="pctCap">жалпы<br>ортақ балл</span></div>' +
-    '<div class="dynRow">' + dynChip(b.dynamics, b.dynamics && b.dynamics.score, { big: true }) + '</div>' + flagsHTML(b.dynamics) +
+    '<div class="dynRow">' + dynChip(b.dynamics, b.dynamics && b.dynamics.score, { big: true, bt: true }) + '</div>' + flagsHTML(b.dynamics) +
     '<p class="meta">' + (isNum(b.participants) ? fmtInt(b.participants) + ' оқушы тапсырды · ' : '') + b.allSubjects + ' пән/көрсеткіш</p>' +
     '<div class="btGrid">' +
     (b.top3.length ? '<div class="mentorBlock"><p class="blockTitle">Жалпы ТОП-3</p>' + topList(b.top3) + '</div>' : '') +
@@ -660,7 +675,7 @@ function btSubjectAct(b, s, i) {
     '<h2 class="name">' + esc(b.stream.short) + ' <i>|</i> ' + esc(t ? t.name : s.label) + '</h2>' +
     '<div class="pctRow"><span class="pctNum">' + fmtNum(s.avg) + '</span><span class="pctSign">' + (isNum(s.max) ? '/' + fmtNum(s.max) : '') + '</span><span class="pctCap">пәннің<br>ортақ балы</span></div>' +
     (isNum(s.avg) && isNum(s.max) && s.max > 0 ? '<div class="pctTrack"><div class="pctFill" style="--pct:' + (100 * s.avg / s.max).toFixed(2) + '"></div></div>' : '') +
-    '<div class="dynRow">' + dynChip(s.dynamics, s.dynamics && s.dynamics.score, { big: true }) + '</div>' +
+    '<div class="dynRow">' + dynChip(s.dynamics, s.dynamics && s.dynamics.score, { big: true, bt: true }) + '</div>' +
     '<p class="meta">Жалпы контекст: ' + fmtNum(b.overall && b.overall.avg) + (b.overall && isNum(b.overall.max) ? '/' + fmtNum(b.overall.max) : '') + ' жалпы ортақ балл' + (isNum(s.participants) ? ' · ' + fmtInt(s.participants) + ' оқушы' : '') + '</p>' +
     (s.top3.length ? '<div class="mentorBlock"><p class="blockTitle">Пән бойынша ТОП-3</p>' + topList(s.top3) + '</div>' : '') +
     (s.hardTopics.length ? '<div class="mentorBlock"><p class="blockTitle">Ең қиын тақырыптар</p><ul class="plain">' + s.hardTopics.map(function (x) { return '<li>' + inline(x) + '</li>'; }).join('') + '</ul></div>' : '') +
@@ -748,6 +763,7 @@ function renderActs() {
   layout();
   update();
   typesetMath($('#acts'));
+  watchLazyTasks();
   if (!reduceMotion) { var intro = $('.act.intro'); if (intro) intro.classList.add('boot'); }
 }
 function btRosterHTML(list, period) {
@@ -778,6 +794,36 @@ function renderAll() {
   rainSetGlyphs();
 }
 
+/* «Барлық пәндер» көрінісінде СТ тапсырмалары бөлім экранға жақындағанда жүктеледі (бет жеңіл қалады). */
+var lazyIO = null;
+function loadTasksInto(box) {
+  if (box.getAttribute('data-loading')) return;
+  box.setAttribute('data-loading', '1');
+  var id = box.getAttribute('data-lazy-tasks');
+  api('GET', '/api/view?tasks=' + encodeURIComponent(id) + (S.drafts ? '&drafts=1' : '')).then(function (r) {
+    var note = $('.lazyNote', box);
+    if (note) note.remove();
+    box.insertAdjacentHTML('beforeend', (r.hardTasks || []).map(taskHTML).join(''));
+    box.removeAttribute('data-lazy-tasks');
+    typesetMath(box);
+    layout(); update();
+  }).catch(function (e) {
+    box.removeAttribute('data-loading');
+    var note = $('.lazyNote', box);
+    if (note) note.innerHTML = esc(e.message) + ' <button class="linkBtn" type="button" data-retry-tasks>Қайталау</button>';
+  });
+}
+function watchLazyTasks() {
+  if (lazyIO) lazyIO.disconnect();
+  var boxes = $$('[data-lazy-tasks]');
+  if (!boxes.length) return;
+  if (!('IntersectionObserver' in window)) { boxes.forEach(loadTasksInto); return; }
+  lazyIO = new IntersectionObserver(function (list) {
+    list.forEach(function (en) { if (en.isIntersecting) { lazyIO.unobserve(en.target); loadTasksInto(en.target); } });
+  }, { rootMargin: '1500px 0px' });
+  boxes.forEach(function (b) { lazyIO.observe(b); });
+}
+
 /* ================= data loading ================= */
 var viewSeq = 0;
 function loadView(opts) {
@@ -788,7 +834,7 @@ function loadView(opts) {
     if (seq !== viewSeq) return;
     S.view = v;
     if (F.period !== v.period) F.period = v.period;
-    writeURL(opts.keepHash ? null : '');
+    writeURL(opts.keepHash ? null : '', !!opts.push);
     return v;
   }).catch(function (e) {
     if (seq !== viewSeq) return;
@@ -836,6 +882,9 @@ function update() {
     var isTeacher = act.classList.contains('teacher') && act.hasAttribute('data-idx');
     if (r.top <= 52 && r.bottom > 52) theme = act.getAttribute('data-theme');
     if (isTeacher && r.top < vh * 0.55 && r.bottom > vh * 0.45) active = +act.getAttribute('data-idx');
+    // Экраннан тыс бөлімдердің анимациялары тоқтатылады (процессор мен батареяны үнемдеу).
+    var off = r.bottom < -80 || r.top > vh + 80;
+    if (off !== act.hasAttribute('data-off')) { if (off) act.setAttribute('data-off', ''); else act.removeAttribute('data-off'); }
     if (r.bottom < -vh || r.top > vh * 1.6) continue;
     var natural = act.getAttribute('data-flow') === 'natural' || smallMQ.matches;
     var a = 1, x = 0;
@@ -876,7 +925,7 @@ function goTo(el, instant) {
 }
 window.addEventListener('scroll', onScroll, { passive: true });
 var resizeT = 0;
-window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { layout(); update(); rainResize(); }, 120); });
+window.addEventListener('resize', function () { clearTimeout(resizeT); resizeT = setTimeout(function () { syncHeaderHeight(); layout(); update(); rainResize(); }, 120); });
 
 /* ================= glyph rain (lskb) ================= */
 var rain = { cv: $('#rain'), ctx: null, cols: [], glyphs: ['Σ', '%', '+', '△'], w: 0, h: 0, dpr: 1, last: 0, color: null, run: false };
@@ -889,7 +938,7 @@ function glyphsNow() {
 }
 function rainResize() {
   var cv = rain.cv; if (!cv || !cv.getContext) return;
-  rain.dpr = Math.min(2, window.devicePixelRatio || 1);
+  rain.dpr = 1; // фондық эффект: 1x сызу процессорды үнемдейді
   rain.w = window.innerWidth; rain.h = window.innerHeight;
   cv.width = Math.round(rain.w * rain.dpr); cv.height = Math.round(rain.h * rain.dpr);
   rain.ctx = cv.getContext('2d'); rain.ctx.setTransform(rain.dpr, 0, 0, rain.dpr, 0, 0);
@@ -937,10 +986,18 @@ function drawRain(dt) {
     }
   }
 }
+// Пайдаланушы 15 секунд әрекетсіз тұрса, жаңбыр тоқтайды; кез келген әрекетте қайта жанады.
+var rainIdleAt = Date.now() + 15000;
+function rainWake() {
+  rainIdleAt = Date.now() + 15000;
+  if (!reduceMotion && !document.hidden && !rain.run) { rain.run = true; rain.last = 0; requestAnimationFrame(rainLoop); }
+}
+['scroll', 'pointermove', 'pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (ev) { window.addEventListener(ev, rainWake, { passive: true }); });
 function rainLoop(t) {
   if (!rain.run) return;
+  if (Date.now() > rainIdleAt) { rain.run = false; return; }
   var dt = rain.last ? Math.min(0.1, (t - rain.last) / 1000) : 0;
-  if (dt === 0 || dt > 1 / 32) { rain.last = t; drawRain(dt || 0.016); }
+  if (dt === 0 || dt > 1 / 20) { rain.last = t; drawRain(dt || 0.05); }
   requestAnimationFrame(rainLoop);
 }
 function rainStart() { rainResize(); if (reduceMotion) return; rain.run = true; rain.last = 0; requestAnimationFrame(rainLoop); }
@@ -975,7 +1032,7 @@ document.addEventListener('click', function (ev) {
     var pi = t.closest('.pickItem');
     if (pi) {
       var k = pi.getAttribute('data-subj'); closePicker();
-      if (k !== F.subject) { F.subject = k; F.combo = 'all'; refresh({ curtain: true }); }
+      if (k !== F.subject) { F.subject = k; F.combo = 'all'; refresh({ curtain: true, push: true }); }
       return;
     }
     if (t.closest('[data-close]') || t === $('#picker')) closePicker();
@@ -994,18 +1051,20 @@ document.addEventListener('click', function (ev) {
   var rn = t.closest('#railNums span');
   if (rn) { goTo($('.act.teacher[data-idx="' + rn.getAttribute('data-i') + '"]')); return; }
   var tb = t.closest('#typeNav .segBtn');
-  if (tb) { var ty = tb.getAttribute('data-type'); if (ty !== F.type) { F.type = ty; F.period = null; F.combo = 'all'; refresh({ curtain: true }); } return; }
+  if (tb) { var ty = tb.getAttribute('data-type'); if (ty !== F.type) { F.type = ty; F.period = null; F.combo = 'all'; refresh({ curtain: true, push: true }); } return; }
   var sb = t.closest('#streamNav .segBtn');
-  if (sb) { var st = sb.getAttribute('data-stream'); if (st !== F.stream) { F.stream = st; F.combo = 'all'; refresh({ curtain: true, keepPeriod: true }); } return; }
+  if (sb) { var st = sb.getAttribute('data-stream'); if (st !== F.stream) { F.stream = st; F.combo = 'all'; refresh({ curtain: true, push: true }); } return; }
   var wb = t.closest('.weekBtn');
-  if (wb) { var id = wb.getAttribute('data-period'); if (id !== F.period) { F.period = id; refresh({ curtain: true }); } return; }
+  if (wb) { var id = wb.getAttribute('data-period'); if (id !== F.period) { F.period = id; refresh({ curtain: true, push: true }); } return; }
   var cb = t.closest('.comboBtn');
   if (cb) {
     var c = cb.getAttribute('data-combo');
-    if (c !== F.combo) { F.combo = c; refresh({ after: function () { goTo($('#roster'), true); } }); }
+    if (c !== F.combo) { F.combo = c; refresh({ push: true, after: function () { goTo($('#roster'), true); } }); }
     return;
   }
   if (t.closest('#hdrHome')) { ev.preventDefault(); window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); return; }
+  var rt = t.closest('[data-retry-tasks]');
+  if (rt) { loadTasksInto(rt.closest('.tasks')); return; }
   var lk = t.closest('[data-link]');
   if (lk) {
     var url = location.origin + urlFor('#r-' + lk.getAttribute('data-link')).replace(/[?&]drafts=1/, '');
@@ -1018,7 +1077,30 @@ document.addEventListener('click', function (ev) {
   if (t.closest('#userBtn')) { userMenu(); return; }
 });
 document.addEventListener('input', function (ev) { if (ev.target && ev.target.id === 'pickSearch') filterPicker(ev.target.value); });
+/* Терезелер (modal): ашылғанда фокус ішіне ауысады, Tab ішінде айналады, Escape жабады, жабылғанда фокус орнына қайтады. */
+var modalEl = $('#modal'), modalPrev = null;
+function modalFocusables() { return $$('button:not([disabled]), [href], input:not([disabled]), select, textarea', modalEl).filter(function (x) { return x.offsetParent !== null; }); }
+new MutationObserver(function () {
+  if (!modalEl.hidden) {
+    var box = $('.modalBox', modalEl);
+    if (box) { box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); var h = $('h4', box); if (h) { h.id = 'modalTitle'; box.setAttribute('aria-labelledby', 'modalTitle'); } }
+    if (!modalEl.contains(document.activeElement)) {
+      if (!modalPrev) modalPrev = document.activeElement;
+      var f = modalFocusables(); if (f.length) f[0].focus();
+    }
+  } else if (modalPrev) { try { modalPrev.focus(); } catch (e) {} modalPrev = null; }
+}).observe(modalEl, { attributes: true, attributeFilter: ['hidden'], childList: true });
 document.addEventListener('keydown', function (ev) {
+  if (!modalEl.hidden) {
+    if (ev.key === 'Escape') { ev.preventDefault(); if (modalEl.onclick) modalEl.onclick({ target: modalEl }); else modalEl.hidden = true; return; }
+    if (ev.key === 'Tab') {
+      var f = modalFocusables(); if (!f.length) return;
+      var i = f.indexOf(document.activeElement);
+      if (ev.shiftKey && i <= 0) { ev.preventDefault(); f[f.length - 1].focus(); }
+      else if (!ev.shiftKey && i === f.length - 1) { ev.preventDefault(); f[0].focus(); }
+    }
+    return;
+  }
   if (ev.key === 'Escape' && !$('#picker').hidden) { closePicker(); $('#subjPick').focus(); }
   if (ev.key === 'Enter' && ev.target && ev.target.id === 'pickSearch') { var first = $('#pickBody .pickItem:not([hidden])[data-q]'); if (first) first.click(); }
 });
@@ -1067,6 +1149,10 @@ function start() {
       renderAll();
       scrollToHash();
       if (S.isAdminPath && canEdit() && window.__openAdmin) window.__openAdmin({});
+      else if (S.isAdminPath) {
+        S.isAdminPath = false; writeURL(location.hash);
+        toast('Әкімші бөлімі тек ментор мен әкімшіге ашық. Сіз жарияланған есептерді көресіз.');
+      }
     });
   }).catch(function (e) { toast(e.message, 'bad'); renderAll(); });
 }

@@ -237,3 +237,20 @@ test('өзгерістер тарихы және қалпына келтіру',
   const audit = await call(A.audit, { cookie: admin });
   assert.ok(audit.body.audit.length > 5);
 });
+
+test('QA түзетулері: тапсырмаларды кейін жүктеу рұқсаты, түс валидациясы, session-да артық мән жоқ', async () => {
+  // СТ жобасы — көрушіге тапсырмалары берілмейді; жарияланғаннан кейін беріледі
+  const c = await call(A.reports, { method: 'POST', cookie: mentor, body: { type: 'st', stream_id: 'sp1', subject_id: 'informatics', period: { month: 5, week: 1 }, data: { hardTasks: [{ text: 'Есеп мәтіні', wrongPct: 40 }] } } });
+  assert.equal(c.status, 200, JSON.stringify(c.body));
+  const id = c.body.report.id;
+  assert.equal((await call(A.view, { cookie: viewer, url: `/api/view?tasks=${id}` })).status, 404);
+  assert.equal((await call(A.view, { cookie: viewer, url: `/api/view?tasks=${id}&drafts=1` })).status, 404);
+  assert.equal((await call(A.view, { cookie: mentor, url: `/api/view?tasks=${id}&drafts=1` })).body.hardTasks.length, 1);
+  await call(A.reports, { method: 'POST', url: '/api/reports?action=publish', cookie: mentor, body: { id, version: c.body.report.version } });
+  assert.equal((await call(A.view, { cookie: viewer, url: `/api/view?tasks=${id}` })).body.hardTasks[0].text, 'Есеп мәтіні');
+  // түс тек #RRGGBB
+  assert.equal((await call(A.catalog, { method: 'POST', cookie: admin, body: { kind: 'subjects', item: { id: 'chemistry', color: 'red;} body{display:none}' } } })).status, 400);
+  assert.equal((await call(A.catalog, { method: 'POST', cookie: admin, body: { kind: 'subjects', item: { id: 'chemistry', color: '#007EFF' } } })).status, 200);
+  const s = await call(A.session, {});
+  assert.equal('hasUsers' in s.body, false);
+});
