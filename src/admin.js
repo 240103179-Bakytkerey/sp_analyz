@@ -96,6 +96,7 @@ function renderAdmin() {
       return '<button class="aTab" type="button" role="tab" data-tab="' + t[0] + '" aria-selected="' + (AD.tab === t[0]) + '">' + t[1] + '</button>';
     }).join('') + '</div><div class="aBody" id="aBody">' + tabBody() + '</div>';
   adminEl.scrollTop = keep;
+  typesetMath(adminEl);
   renderHeader();
 }
 function tabBody() {
@@ -289,6 +290,7 @@ function stForm(d) {
         inp(p + '.title', t.title, { label: 'Қысқа атауы (міндетті емес)', cls: 'wide' }) +
         (t.html ? '<div class="aField wide"><span>Платформадағы мәтін (формуламен)</span><div class="aPreview rich">' + t.html + '</div><button class="aBtn ghost" type="button" data-drop-html="' + i + '">Формуласыз мәтінмен ауыстыру</button></div>' : ta(p + '.text', t.text, { label: 'Есеп мәтіні', rows: 4 })) +
         ta(p + '.images', t.images, { label: 'Сурет сілтемелері (әр жолға біреу)', rows: 1, lines: true }) +
+        (t.options && t.options.length || t.pairs && t.pairs.length ? '<div class="aField wide"><span>Жауап нұсқалары (платформадан, сайтта көрсетіледі)</span><div class="aPreview">' + optionsHTML(t) + pairsHTML(t) + '</div></div>' : '') +
         ta(p + '.explanation', t.explanation, { label: 'Түсіндірме', rows: 3 }) + '</div>';
     }).join('') + '<button class="aBtn" type="button" data-add="hardTasks">+ Тапсырма</button></div>' +
     '<div class="aCard"><h3>Ментор</h3>' + ta('data.topics', d.topics, { label: 'Тақырыптар (әр жолға біреу)', rows: 2, lines: true }) +

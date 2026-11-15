@@ -10,6 +10,19 @@ const MAGIC = { 'image/jpeg': [0xff, 0xd8, 0xff], 'image/png': [0x89, 0x50, 0x4e
 
 export default route({
   async GET(req, res, q) {
+    const img = String(q.get('img') || '');
+    if (img) {
+      // Платформа есебінің ішкі суреті (хэш бойынша; мазмұны өзгермейді).
+      if (!/^[a-f0-9]{8,64}$/.test(img)) throw httpError(404, 'Сурет табылмады.', 'not_found');
+      const d = await db();
+      const row = (await d.query('select mime, body from task_images where hash = $1', [img])).rows[0];
+      if (!row) throw httpError(404, 'Сурет табылмады.', 'not_found');
+      res.statusCode = 200;
+      res.setHeader('Content-Type', /^image\/(png|jpe?g|gif|webp)$/.test(row.mime) ? row.mime : 'application/octet-stream');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.setHeader('Content-Security-Policy', "default-src 'none'");
+      return res.end(Buffer.from(row.body));
+    }
     const id = String(q.get('id') || '');
     if (!/^ph_[a-f0-9]{12}$/.test(id)) throw httpError(404, 'Фото табылмады.', 'not_found');
     const d = await db();

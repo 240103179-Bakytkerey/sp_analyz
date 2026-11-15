@@ -769,3 +769,27 @@ code{font-size:12px}
 .aRow.tight>.aSel{width:auto;flex:0 1 200px}
 .aRow.tight>.aIn{width:auto;flex:1 1 160px}
 .aRow.tight>code{align-self:center}
+
+/* СТ: жауап нұсқалары (неше оқушы таңдады), суреттер */
+.opts{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.opt{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(70px,150px) auto;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid color-mix(in oklab,var(--fgc) 12%,transparent);font-size:14.5px;color:var(--fgc)}
+.opt.ok{border-color:color-mix(in oklab,var(--okc) 70%,transparent);background:color-mix(in oklab,var(--okc) 12%,transparent)}
+.opt.trap{border-color:color-mix(in oklab,var(--badc) 60%,transparent);background:color-mix(in oklab,var(--badc) 9%,transparent)}
+.optL{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;font-family:var(--font-display);font-weight:700;font-size:13px;background:color-mix(in oklab,var(--fgc) 12%,transparent)}
+.opt.ok .optL{background:var(--okc);color:var(--bgc)}
+.opt.trap .optL{background:var(--badc);color:#fff}
+.optT{min-width:0;overflow-wrap:anywhere}
+.optT .rich{font-size:14.5px}
+.optT .rich p{margin:0}
+.optT img{display:block;max-width:min(260px,100%);max-height:160px;margin-top:6px;border-radius:8px;background:#fff}
+.optTag{display:block;margin-top:2px;font-style:normal;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.opt.ok .optTag{color:var(--okc)}.opt.trap .optTag{color:var(--badc)}
+.optBar{height:7px;border-radius:999px;background:color-mix(in oklab,var(--fgc) 12%,transparent);overflow:hidden}
+.optBar span{display:block;height:100%;border-radius:999px;background:color-mix(in oklab,var(--fgc) 55%,transparent)}
+.opt.ok .optBar span{background:var(--okc)}.opt.trap .optBar span{background:var(--badc)}
+.optN{font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums;opacity:.85}
+.optN b{font-family:var(--font-display);font-size:15px}
+.taskImgs img{max-width:min(100%,520px);max-height:320px;cursor:zoom-in}
+.task .katex{font-size:1.04em}
+.taskText .katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden}
+@media (max-width:760px){.opt{grid-template-columns:28px minmax(0,1fr);}.optBar{grid-column:2}.optN{grid-column:2}}

@@ -168,6 +168,14 @@ async function importSt(user, b) {
     let rep = existing;
     if (!rep) rep = (await createReport(user, { type: 'st', stream_id: streamId, subject_id: subjectId, period: { id: period.id }, data: {} })).report;
     const saved = await mutateReportData(user, rep.id, `import:${b.mode === 'json' ? 'json' : 'platform'}`, (cur) => mergePlatformResult(cur, result, ctx).data);
+    // Есепте көрсетілетін ішкі суреттер ғана сақталады.
+    const used = new Set(JSON.stringify(saved.data.hardTasks || []).match(/\/api\/photo\?img=[a-f0-9]+/g) || []);
+    const imgs = (result.images || []).filter((im) => used.has(`/api/photo?img=${im.hash}`));
+    if (imgs.length) {
+      const d = await db();
+      for (const im of imgs) await d.query('insert into task_images (hash, mime, body) values ($1,$2,$3) on conflict (hash) do nothing', [im.hash, im.mime, Buffer.from(im.data, 'base64')]);
+    }
+    out.images = imgs.length;
     out.reportId = saved.id;
     out.version = saved.version;
     out.applied = true;

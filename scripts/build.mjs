@@ -73,5 +73,13 @@ ${APP}
 </html>
 `;
 fs.mkdirSync(path.join(ROOT, 'public'), { recursive: true });
+// KaTeX (платформа есептеріндегі LaTeX формулалар үшін) сайттың өзінен беріледі — сыртқы CDN керек емес.
+const KATEX = path.join(ROOT, 'node_modules', 'katex', 'dist');
+if (fs.existsSync(KATEX)) {
+  const out = path.join(ROOT, 'public', 'katex');
+  fs.mkdirSync(path.join(out, 'contrib'), { recursive: true });
+  for (const f of ['katex.min.js', 'katex.min.css', 'contrib/auto-render.min.js']) fs.copyFileSync(path.join(KATEX, f), path.join(out, f));
+  fs.cpSync(path.join(KATEX, 'fonts'), path.join(out, 'fonts'), { recursive: true, filter: (src) => !/\.(ttf|woff)$/.test(src) });
+} else console.warn('KaTeX табылмады (npm install орындаңыз): LaTeX формулалар мәтін болып көрінеді');
 fs.writeFileSync(path.join(ROOT, 'public', 'index.html'), html);
 console.log(`public/index.html — ${(Buffer.byteLength(html) / 1024).toFixed(0)} KB`);

@@ -48,7 +48,16 @@ function toast(msg, tone) {
 }
 
 /* Мәтін: абзац, «- » тармақ, «1. » нөмірлі тармақ, **қалың**, H_2O / x^2 / _{..} ^{..} (химия, математика). */
+// Платформа мәтініндегі LaTeX бөліктері ($$…$$, $…$, \(…\), \[…\]) өзгертілмей қалады — оларды KaTeX сызады.
+var MATH_RE = /(\$\$[\s\S]+?\$\$|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]|\$[^$\n]{1,300}?\$)/;
 function inline(s) {
+  return String(s == null ? '' : s).split(MATH_RE).map(function (part, i) { return i % 2 ? esc(part) : inlinePlain(part); }).join('');
+}
+/** Формуласыз мәтіндегі химиялық индекстер: NO3 → NO₃, (NO3)2 → (NO₃)₂ (Cr3+ сияқты зарядқа тиіспейді). */
+function chemSub(html) {
+  return html.replace(/([A-Z][a-z]?|\))(\d{1,2})(?![\d,.%°+\-−⁺⁻\/])/g, '$1<sub>$2</sub>');
+}
+function inlinePlain(s) {
   return esc(s)
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
     .replace(/_\{([^}]{1,24})\}/g, '<sub>$1</sub>')
@@ -69,6 +78,31 @@ function richText(s, cls) {
   });
   close();
   return html ? '<div class="rich' + (cls ? ' ' + cls : '') + '">' + html + '</div>' : '';
+}
+
+/* KaTeX: платформа есептеріндегі LaTeX формулалар. Кітапхана тек қажет болғанда жүктеледі. */
+var katexState = null;
+function loadKatex() {
+  if (katexState) return katexState;
+  var base = '/katex/';
+  function js(src) { return new Promise(function (ok, bad) { var s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = bad; document.head.appendChild(s); }); }
+  var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = base + 'katex.min.css'; document.head.appendChild(css);
+  katexState = js(base + 'katex.min.js').then(function () { return js(base + 'contrib/auto-render.min.js'); }).catch(function () { katexState = null; });
+  return katexState;
+}
+function typesetMath(rootEl) {
+  if (!rootEl) return;
+  var targets = $$('.task, .aPreview, .rich', rootEl).filter(function (el) { return /\$|\\\(|\\\[/.test(el.textContent); });
+  if (!targets.length) return;
+  loadKatex() && loadKatex().then(function () {
+    if (!window.renderMathInElement) return;
+    targets.forEach(function (el) {
+      try {
+        window.renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: false }, { left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }], throwOnError: false, strict: 'ignore', ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option', 'input'] });
+      } catch (e) {}
+    });
+    layout(); update();
+  });
 }
 
 /* ================= brand ================= */
@@ -519,14 +553,41 @@ function lsPanel(e, i) {
     mentorHTML('Ментор қорытындысы', e.data.mentor.summary) + mentorHTML('Келесі қадам', e.data.mentor.nextSteps, 'tips') +
     lessonsDetails(e) + metaLine(e) + ackInline(e) + '</div>' + photoHTML(e.teacher, e.subject, i);
 }
+var LETTERS = 'ABCDEFGHIJKLMNOPQRST';
+function optionsHTML(t) {
+  var ops = t.options || [];
+  if (!ops.length) return '';
+  var known = ops.every(function (o) { return isNum(o.picks); });
+  var total = known ? ops.reduce(function (a, o) { return a + o.picks; }, 0) : 0;
+  var maxWrong = -1, maxWrongI = -1;
+  if (known) ops.forEach(function (o, i) { if (!o.correct && o.picks > maxWrong) { maxWrong = o.picks; maxWrongI = i; } });
+  return '<div class="opts"><p class="blockTitle">Жауап нұсқалары' + (known ? ' <small>неше оқушы таңдады' + (t.several ? ' · бірнеше дұрыс жауап' : '') + '</small>' : '') + '</p>' +
+    ops.map(function (o, i) {
+      var pct = known && total ? (100 * o.picks / total) : null;
+      var trap = known && i === maxWrongI && maxWrong > 0;
+      return '<div class="opt' + (o.correct ? ' ok' : '') + (trap ? ' trap' : '') + '">' +
+        '<span class="optL">' + LETTERS.charAt(i) + '</span>' +
+        '<span class="optT">' + (o.html ? '<span class="rich">' + o.html + '</span>' : '<span class="rich">' + chemSub(inline(o.text || '')) + '</span>') +
+        (o.image ? '<img src="' + esc(o.image) + '" alt="' + LETTERS.charAt(i) + ' нұсқасының суреті" loading="lazy">' : '') +
+        (o.correct ? '<em class="optTag">дұрыс жауап</em>' : trap ? '<em class="optTag">ең көп таңдалған қате</em>' : '') + '</span>' +
+        (known ? '<span class="optBar"><span style="width:' + (pct || 0).toFixed(1) + '%"></span></span><span class="optN"><b>' + o.picks + '</b>' + (pct != null ? ' · ' + fmtNum(pct, 0) + '%' : '') + '</span>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+}
+function pairsHTML(t) {
+  if (!t.pairs || !t.pairs.length) return '';
+  return '<div class="opts"><p class="blockTitle">Сәйкестендіру (дұрыс жұптар)</p>' + t.pairs.map(function (p) { return '<div class="opt ok"><span class="optT"><span class="rich">' + chemSub(inline(p.left)) + ' → <b>' + chemSub(inline(p.right)) + '</b></span></span></div>'; }).join('') + '</div>';
+}
 function taskHTML(t) {
-  var body = t.html ? '<div class="rich taskText">' + t.html + '</div>' : richText(t.text, 'taskText');
+  var body = t.html ? '<div class="rich taskText">' + t.html + '</div>' : (function () { var h = richText(t.text, 'taskText'); return t.fromPlatform ? chemSub(h) : h; })();
   return '<article class="task"><header class="taskHead">' +
     (isNum(t.variant) ? '<span class="chipS">' + t.variant + '-нұсқа</span>' : '') + (isNum(t.q) ? '<span class="chipS">№' + t.q + '</span>' : '') +
     (t.topic ? '<span class="chipS ghost">' + esc(t.topic) + '</span>' : '') +
     (isNum(t.wrongPct) ? '<span class="taskPct"><b>' + fmtNum(t.wrongPct, 0) + '%</b> қателесті</span>' : '') + '</header>' +
     (t.title ? '<h4 class="taskTitle">' + inline(t.title) + '</h4>' : '') + body +
-    (t.images && t.images.length ? '<div class="taskImgs">' + t.images.filter(function (u) { return /^(https?:|\/api\/)/.test(u); }).map(function (u) { return '<img src="' + esc(u) + '" alt="Есептің суреті" loading="lazy">'; }).join('') + '</div>' : '') +
+    (t.images && t.images.length ? '<div class="taskImgs">' + t.images.filter(function (u) { return /^(https?:|\/api\/)/.test(u); }).map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Есептің суреті" loading="lazy"></a>'; }).join('') + '</div>' : '') +
+    optionsHTML(t) + pairsHTML(t) +
+    (isNum(t.answered) ? '<p class="meta">' + t.answered + ' оқушы жауап берді</p>' : '') +
     (t.explanation ? '<div class="taskExpl"><p class="blockTitle">Түсіндірме</p>' + richText(t.explanation) + '</div>' : '') + '</article>';
 }
 function stPanel(e, i) {
@@ -710,6 +771,7 @@ function renderActs() {
   if (n) $('.rail').removeAttribute('data-empty'); else $('.rail').setAttribute('data-empty', '');
   layout();
   update();
+  typesetMath($('#acts'));
   if (!reduceMotion) { var intro = $('.act.intro'); if (intro) intro.classList.add('boot'); }
 }
 function btRosterHTML(list, period) {
