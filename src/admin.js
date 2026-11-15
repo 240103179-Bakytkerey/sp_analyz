@@ -197,8 +197,27 @@ function editorHTML() {
   return '<div class="aCard"><div class="aRow"><button class="aBtn ghost" type="button" data-a="back">← Есептер тізімі</button><h3 class="edTitle">' + T.short + ' · ' + esc(T.name) + (ed.isNew ? ' — жаңа есеп' : '') + '</h3>' + (r ? statusChip(r) : '') + '</div>' + head + '</div>' +
     lowc + msgs + form + actions;
 }
+/** Есептің пәні (жаңа есепте — таңдалғаны). */
+function edSubject() { return AD.ed ? (AD.ed.isNew ? AD.ed.meta.subject_id : AD.ed.report && AD.ed.report.subject_id) : null; }
+/** Пәнге қатысты комбинациялар (комбинацияның «пәндер» тізімі бойынша). Ортақ пәндерге (тарих, мат. сауаттылық) — бәрі. */
+function combosFor(subjectId, keep) {
+  var all = cat().combinations.filter(function (c) { return c.active !== false || (keep || []).indexOf(c.id) >= 0; });
+  if (!subjectId || AD.allCombos) return all;
+  var rel = all.filter(function (c) { return (c.subjects || []).indexOf(subjectId) >= 0 || (keep || []).indexOf(c.id) >= 0; });
+  return rel.length ? rel : all;
+}
+function comboToggleBtn() {
+  return '<button class="aBtn ghost" type="button" data-a="all-combos">' + (AD.allCombos ? 'Тек пәнге қатыстыларын көрсету' : 'Барлық комбинация') + '</button>';
+}
+/** Клиенттегі авто-тану (lib/merge-ls.js detectCombo-мен бірдей ереже). */
+function normCode(s) { return String(s == null ? '' : s).toUpperCase().replace(/Ё/g, 'Е').replace(/[^0-9A-ZА-ЯӘҒҚҢӨҰҮҺІ]+/g, ''); }
+function detectComboClient(text) {
+  var t = normCode(text), best = null, len = 0;
+  cat().combinations.forEach(function (c) { [c.code].concat(c.aliases || []).forEach(function (k) { var n = normCode(k); if (n.length >= 3 && n.length > len && t.indexOf(n) >= 0) { best = c; len = n.length; } }); });
+  return best;
+}
 function comboChecks(path, list) {
-  return '<div class="aChecks">' + cat().combinations.filter(function (c) { return c.active !== false || (list || []).indexOf(c.id) >= 0; }).map(function (c) {
+  return '<div class="aChecks">' + combosFor(edSubject(), list).map(function (c) {
     return '<label class="aCheck"><input type="checkbox" data-combo-toggle="' + esc(path) + '" value="' + esc(c.id) + '"' + ((list || []).indexOf(c.id) >= 0 ? ' checked' : '') + '>' + esc(c.code) + '</label>';
   }).join('') + (cat().combinations.length ? '' : '<span class="aSrc">Комбинация анықтамалығы бос</span>') + '</div>';
 }
@@ -211,7 +230,7 @@ function lsForm(d) {
       return '<div class="aLesson' + (l.excluded ? ' excluded' : '') + '"><div class="aRow"><b class="aNum">' + (i + 1) + '</b>' +
         (l.source && l.source !== 'manual' ? '<span class="chip">' + esc(l.source === 'sapaline' ? 'SapaLine' : 'JSON') + (l.sourceId ? ' #' + esc(l.sourceId) : '') + '</span>' : '<span class="chip">қолмен</span>') +
         inp(p + '.date', l.date, { label: 'Күні', ph: 'ЖЖЖЖ-АА-КК' }) + inp(p + '.topic', l.topic, { label: 'Тақырып', cls: 'grow' }) + (l.agym ? '<span class="aSrc">SapaLine ағымы: ' + esc(l.agym) + '</span>' : '') + '</div>' +
-        '<div class="aRow"><span class="aField"><span>Комбинация(лар)</span>' + comboChecks(p + '.combos', l.combos) + '</span>' +
+        '<div class="aRow"><span class="aField"><span>Комбинация(лар) ' + (i === 0 ? comboToggleBtn() : '') + '</span>' + comboChecks(p + '.combos', l.combos) + '</span>' +
         inp(p + '.present', l.present, { label: 'Қатысқан', num: true }) + inp(p + '.total', l.total, { label: 'Жалпы', num: true }) + inp(p + '.attendancePct', l.attendancePct, { label: 'немесе қатысым %', num: true }) +
         inp(p + '.liked', l.liked, { label: 'Ұнады', num: true }) + inp(p + '.avg', l.avg, { label: 'Орташа', num: true }) + inp(p + '.disliked', l.disliked, { label: 'Ұнамады', num: true }) + '</div>' +
         '<div class="aRow"><span class="aField"><span>Түсіну деңгейі (жауап саны)</span><span class="aRow tight">' + UNDERSTANDING.map(function (c) { return inp(p + '.understanding.' + c.key, (l.understanding || {})[c.key], { label: c.label, num: true }); }).join('') + '</span></span></div>' +
@@ -255,12 +274,12 @@ function stForm(d) {
     '<p class="aSrc">Қайта тапсыру баллдан ойдан шек қойып есептелмейді: нақты санды не дереккөз пайызын енгізіңіз. Бөлгіш белгісіз болса, ойдан табылмайды.</p></div>' +
     '<div class="aCard"><h3>Комбинациялар бойынша</h3>' + (d.combos || []).map(function (c, i) {
       var p = 'data.combos.' + i;
-      return '<div class="aRow">' + sel(p + '.comboId', c.comboId, [['', '— комбинация —']].concat(cat().combinations.map(function (x) { return [x.id, x.code]; })), { label: 'Комбинация' }) +
+      return '<div class="aRow">' + sel(p + '.comboId', c.comboId, [['', '— комбинация —']].concat(combosFor(edSubject(), [c.comboId]).map(function (x) { return [x.id, x.code]; })), { label: 'Комбинация' }) +
         inp(p + '.score', c.score, { label: 'Ортақ балл', num: true }) + inp(p + '.max', c.max, { label: 'Макс.', num: true }) + inp(p + '.submitted', c.submitted, { label: 'Тапсырды', num: true }) +
         inp(p + '.retakeCount', c.retakeCount, { label: 'Қайта тапсыру саны', num: true }) + inp(p + '.retakeBase', c.retakeBase, { label: 'Оқушы саны', num: true }) + inp(p + '.retakePct', c.retakePct, { label: 'немесе %', num: true }) +
         (c.fromPlatform ? '<span class="chip">балл платформадан</span>' : '') + '<button class="aBtn ghost danger" type="button" data-del="combos.' + i + '">✕</button></div>' +
         ta(p + '.note', c.note, { label: 'Осы комбинация бойынша талдау', rows: 2 });
-    }).join('') + '<button class="aBtn" type="button" data-add="combos">+ Комбинация</button></div>' +
+    }).join('') + '<div class="aRow"><button class="aBtn" type="button" data-add="combos">+ Комбинация</button>' + comboToggleBtn() + '</div></div>' +
     '<div class="aCard liveSum" id="liveSum">' + stSummary(d) + '</div>' +
     '<div class="aCard"><h3>Қиын тапсырмалар <small>' + (d.hardTasks || []).length + '</small></h3><p class="aHint">Саны шектелмейді. Мәтінде: жаңа жол — абзац, H_2SO_4, x^2, x^{n+1}, **қалың**. Платформадан келген формулалар (MathML) сақталады.</p>' +
     (d.hardTasks || []).map(function (t, i) {
@@ -510,7 +529,7 @@ function runImport(kind) {
 var CAT_SPEC = {
   subjects: { title: 'Пәндер', cols: [['name', 'Атауы'], ['short', 'Қысқа'], ['glyph', 'Таңба'], ['sapaline_code', 'SapaLine коды'], ['platform_code', 'Платформа коды'], ['max_bt', 'БТ макс. балл'], ['sort', 'Рет', 'num'], ['active', 'Белсенді', 'bool']] },
   streams: { title: 'Ағымдар', cols: [['name', 'Атауы'], ['short', 'Қысқа'], ['sort', 'Рет', 'num'], ['active', 'Белсенді', 'bool']] },
-  combinations: { title: 'Комбинациялар', cols: [['code', 'Коды'], ['name', 'Атауы'], ['note', 'Ескертпе'], ['sort', 'Рет', 'num'], ['active', 'Белсенді', 'bool']] },
+  combinations: { title: 'Комбинациялар', cols: [['code', 'Коды'], ['name', 'Атауы'], ['aliases', 'Баламалы кодтар (үтірмен)', 'list'], ['subjects', 'Пәндер (id, үтірмен)', 'list'], ['sort', 'Рет', 'num'], ['active', 'Белсенді', 'bool']] },
   teachers: { title: 'Мұғалімдер', cols: [['photo', 'Фото', 'photo'], ['full_name', 'Аты-жөні'], ['display', 'Сайттағы аты'], ['aliases', 'SapaLine-дағы басқа аттары (үтірмен)', 'list'], ['active', 'Белсенді', 'bool']] },
   assignments: { title: 'Тағайындаулар', cols: [['stream_id', 'Ағым', 'stream'], ['subject_id', 'Пән', 'subject'], ['teacher_id', 'Мұғалім', 'teacher'], ['valid_from', 'Басталуы', 'date'], ['valid_to', 'Аяқталуы', 'date'], ['note', 'Ескертпе']] },
   periods: { title: 'Кезеңдер', cols: [['stream_id', 'Ағым', 'stream'], ['kind', 'Түрі', 'kind'], ['month', 'Ай', 'num'], ['week', 'Апта', 'num'], ['label', 'Атауы'], ['test_date', 'БТ күні', 'date'], ['cohort', 'Когорта'], ['date_from', 'Басы', 'date'], ['date_to', 'Соңы', 'date'], ['seq', 'Рет (seq)', 'num']] }
@@ -541,7 +560,7 @@ function catalogHTML() {
     teachers: 'Бір адам — бір профиль. Пән/ағым тағайындаулары бөлек. Фотосы жоқ мұғалімге инициалдар көрсетіледі — бөтен адамның фотосын қоймаңыз.',
     assignments: 'Мұғалім ауысса: ескі тағайындауға «Аяқталуы» күнін қойып, жаңасын қосыңыз. Бұрынғы есептердегі мұғалім өзгермейді.',
     periods: 'Әр ағымның өз күнтізбесі. «Алдыңғы апта» осы тізімдегі seq бойынша тікелей алдыңғы апта: айда неше апта болғаны жорамалданбайды. Аптаны өткізіп алмаңыз — бос апта «дерек жоқ» болып көрсетіледі.',
-    combinations: 'Комбинацияларды осында қосасыз. Есептерде қолданылған комбинацияны өшірудің орнына «белсенді емес» етіңіз.',
+    combinations: 'Импорт кодты бос орын, сызықша, әріп өлшеміне қарамай таниды («ДЖТАНГЛ-IELTS» = «ДЖТАНГЛ IELTS»). Баламалы кодтар (мысалы БХ) де танылады. «Пәндер» — комбинацияға кіретін пәндер id-і (' + cat().subjects.map(function (s) { return s.id; }).join(', ') + '): есеп формасында тек сол пәнге қатысты комбинациялар ұсынылады. Есептерде қолданылған комбинацияны өшірудің орнына «белсенді емес» етіңіз.',
     subjects: 'SapaLine / платформа кодтары импорт үшін керек; оларды «Импорт баптауы» бөліміндегі «Анықтау» арқылы тексеріңіз.'
   };
   return '<div class="aCard"><div class="aTabs inner">' + Object.keys(CAT_SPEC).map(function (k) { return '<button class="aTab" type="button" data-cat="' + k + '" aria-selected="' + (k === kind) + '">' + CAT_SPEC[k].title + ' <small>' + (cat()[k] || []).length + '</small></button>'; }).join('') + '</div>' +
@@ -645,7 +664,7 @@ function settingsHTML() {
       return '<tr><td>' + esc(p[1].name) + (p[1].platform_code ? '<br><small>код: ' + esc(p[1].platform_code) + '</small>' : '') + '</td><td colspan="2">' +
         list.map(function (c, ci) {
           return '<div class="aRow tight"><code>' + esc(c.courseId) + '</code> ' + esc(c.courseName || '') +
-            '<select class="aSel" data-course-combo="' + esc(key) + '" data-ci="' + ci + '">' + opt('', 'комбинациясыз (тек жалпы)', c.comboId || '') + cat().combinations.map(function (x) { return opt(x.id, x.code, c.comboId || ''); }).join('') + '</select>' +
+            '<select class="aSel" data-course-combo="' + esc(key) + '" data-ci="' + ci + '">' + (function () { var d = detectComboClient(c.courseName), cur = c.comboId == null ? '__auto' : c.comboId; return opt('__auto', 'авто: ' + (d ? d.code : 'табылмады'), cur) + opt('', 'комбинациясыз (тек жалпы)', cur); })() + combosFor(p[1].id, [c.comboId]).map(function (x) { return opt(x.id, x.code, c.comboId == null ? '__auto' : c.comboId); }).join('') + '</select>' +
             '<button class="aBtn ghost danger" type="button" data-course-del="' + esc(key) + '" data-ci="' + ci + '">✕</button></div>';
         }).join('') +
         '<div class="aRow tight"><input class="aIn" placeholder="курс id-ін қолмен қосу" data-course-manual="' + esc(key) + '"><button class="aBtn ghost" type="button" data-course-manual-add="' + esc(key) + '">+</button></div></td>' +
@@ -739,7 +758,7 @@ adminEl.addEventListener('change', function (ev) {
     if (t.checked) r.combos.push(t.value); else r.combos = r.combos.filter(function (x) { return x !== t.value; });
     return;
   }
-  if (t.hasAttribute('data-course-combo')) { courseList(t.getAttribute('data-course-combo'))[+t.getAttribute('data-ci')].comboId = t.value || null; return; }
+  if (t.hasAttribute('data-course-combo')) { courseList(t.getAttribute('data-course-combo'))[+t.getAttribute('data-ci')].comboId = t.value === '__auto' ? null : t.value; return; }
   if (t.hasAttribute('data-cfg-groups')) { AD.platCfg.groups[t.getAttribute('data-cfg-groups')] = parseGroups(t.value); return; }
   if (t.tagName === 'SELECT' && t.hasAttribute('data-cfg')) { cfgInput(t); return; }
   var n = t.getAttribute('name');
@@ -831,6 +850,7 @@ adminEl.addEventListener('click', function (ev) {
   }
   if ((b = t.closest('[data-a]'))) {
     var a = b.getAttribute('data-a');
+    if (a === 'all-combos') { AD.allCombos = !AD.allCombos; renderAdmin(); return; }
     if (a === 'plat-subjects') { api('POST', '/api/import?action=platform-subjects', {}).then(function (x) { AD.platSubjects = x.subjects; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); }); return; }
     if (a === 'plat-codes-save') {
       var jobs = $$('[data-plat-code]', adminEl).map(function (el) {

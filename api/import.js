@@ -8,7 +8,7 @@ import { requireUser, assertCanEdit } from '../lib/auth.js';
 import { db } from '../lib/db.js';
 import { getCatalog, assignmentAt, getMapping, setMapping, logImportRun, createReport, mutateReportData, getReport, importRuns, ensurePeriod } from '../lib/repo.js';
 import { sapalineConfig, sapalinePeriods, sapalineRows, sapalineDiscover } from '../lib/sapaline.js';
-import { mergeLessons, norm } from '../lib/merge-ls.js';
+import { mergeLessons, norm, comboCodeMap } from '../lib/merge-ls.js';
 import { mergePlatformResult } from '../lib/merge-st.js';
 import { coursesOf, combineResults } from '../lib/platform-combine.js';
 import { parseTelegram } from '../lib/telegram.js';
@@ -48,7 +48,7 @@ async function importLs(user, b) {
   const month = Number(b.month), week = Number(b.week);
   if (!(month >= 1 && week >= 1)) throw httpError(400, 'Мақсатты оқу айы мен аптасы керек.');
   const comboIds = new Set(cat.combinations.map((c) => c.id));
-  const comboByCode = new Map(cat.combinations.map((c) => [norm(c.code), c.id]));
+  const comboByCode = comboCodeMap(cat.combinations);
   const division = (cfg.divisions || {})[streamId] || '';
   const divisionIsStream = !!division && Object.entries(cfg.divisions || {}).filter(([, v]) => v === division).length === 1;
   const importedAt = new Date().toISOString();
@@ -129,7 +129,7 @@ async function importSt(user, b) {
   const month = Number(b.month), week = Number(b.week);
   if (!(month >= 1 && week >= 1)) throw httpError(400, 'Оқу айы мен аптасы керек.');
   const key = `${streamId}.${subjectId}`;
-  const courses = coursesOf(cfg, key);
+  const courses = coursesOf(cfg, key, cat.combinations);
   let combined;
   if (b.mode === 'json') {
     // Резерв: analysis жүйесінен не платформадан алынған PlatformResult пішіміндегі JSON.
