@@ -2,7 +2,6 @@
 // GET    /api/reports?type=&stream=&subject=&period=&status=   — тізім
 // GET    /api/reports?id=..                                     — бір есеп (толық)
 // GET    /api/reports?id=..&revisions=1                         — нұсқалар тарихы
-// GET    /api/reports?id=..&acks=1                              — кім таныстық
 // POST   /api/reports { type, stream_id, subject_id, period:{month,week}|{test_date,label}, scope, teacher_id, data }
 // PUT    /api/reports { id, version, data, teacher_id, publish? }  — сақтау (version сәйкес келмесе 409)
 // POST   /api/reports?action=publish|unpublish|restore { id, version, revisionId? }
@@ -10,7 +9,7 @@
 import { route } from '../lib/route.js';
 import { readBody, httpError } from '../lib/http.js';
 import { requireUser, assertCanEdit } from '../lib/auth.js';
-import { listReports, getReport, createReport, updateReport, publishReport, unpublishReport, restoreRevision, reportRevisions, deleteReport, ackList } from '../lib/repo.js';
+import { listReports, getReport, createReport, updateReport, publishReport, unpublishReport, restoreRevision, reportRevisions, deleteReport } from '../lib/repo.js';
 
 const EDITORS = ['admin', 'mentor'];
 
@@ -22,7 +21,6 @@ export default route({
       const rep = await getReport(id);
       if (!rep) throw httpError(404, 'Есеп табылмады.');
       if (q.get('revisions') === '1') return { revisions: await reportRevisions(id) };
-      if (q.get('acks') === '1') return { acks: await ackList(id) };
       return { report: rep };
     }
     return { reports: await listReports({ type: q.get('type'), stream: q.get('stream'), subject: q.get('subject'), period: q.get('period'), status: q.get('status') }) };

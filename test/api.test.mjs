@@ -69,7 +69,7 @@ test('рөлдер серверде тексеріледі', async () => {
 });
 
 let lsId;
-test('ЛС есебі: жасау, қатар сақтаудан қорғаныс, жариялау, «Таныстым» нұсқамен', async () => {
+test('ЛС есебі: жасау, қатар сақтаудан қорғаныс, жариялау, нұсқалар', async () => {
   const data = { lessons: [{ sourceId: 'sap-1', source: 'sapaline', combos: ['c_bh', 'c_fh'], present: 56, total: 61, liked: 46, avg: 0, disliked: 0, understanding: { u90: 45, u80: 1, u70: 0, u60: 0, u50: 0, u0: 0 } }], mentor: { summary: 'Жақсы сабақ', nextSteps: '- Тақырыпты бекіту' } };
   const c = await call(A.reports, { method: 'POST', cookie: mentor, body: { type: 'ls', stream_id: 'sp1', subject_id: 'chemistry', period: { month: 5, week: 2 }, data } });
   assert.equal(c.status, 200, JSON.stringify(c.body));
@@ -96,24 +96,12 @@ test('ЛС есебі: жасау, қатар сақтаудан қорғаны�
   assert.equal(Math.round(e.metrics.attendance.pct * 100) / 100, 91.8);
   assert.equal(e.metrics.like.pct, 100);
   assert.equal(e.dynamics.status, 'no_prev_period');
-  // таныстым
-  const a = await call(A.ack, { method: 'POST', cookie: viewer, body: { reportId: rep.id } });
-  assert.equal(a.status, 200);
-  assert.equal(a.body.rev, 1);
-  // басқа «құрылғыдан» (жаңа cookie) және қайта кіргенде сақталған
-  const again = await login('viewer1', 'password-viewer1');
-  v = await call(A.view, { cookie: again, url: '/api/view?type=ls&stream=sp1&subject=chemistry' });
-  assert.equal(v.body.entries[0].ack.rev, 1);
-  // басқа көрушіде белгі жоқ
-  v = await call(A.view, { cookie: viewer2, url: '/api/view?type=ls&stream=sp1&subject=chemistry' });
-  assert.equal(v.body.entries[0].ack, null);
-  // мазмұн өзгеріп қайта жарияланса — жаңа нұсқа, бұрынғы танысу ескі нұсқаға тиесілі
+  // мазмұн өзгеріп қайта жарияланса — жаңа жарияланған нұсқа
   const cur = (await call(A.reports, { cookie: mentor, url: `/api/reports?id=${rep.id}` })).body.report;
   const u = await call(A.reports, { method: 'PUT', cookie: mentor, body: { id: rep.id, version: cur.version, data: { ...cur.data, mentor: { summary: 'Түзетілді', nextSteps: '' } }, publish: true } });
   assert.equal(u.status, 200, JSON.stringify(u.body));
   assert.equal(u.body.report.published_rev, 2);
   v = await call(A.view, { cookie: viewer, url: '/api/view?type=ls&stream=sp1&subject=chemistry' });
-  assert.equal(v.body.entries[0].ack.rev, 1);
   assert.equal(v.body.entries[0].publishedRev, 2);
   // көруші өзгерте алмайды
   assert.equal((await call(A.reports, { method: 'PUT', cookie: viewer, body: { id: rep.id, version: 1, data: {} } })).status, 403);

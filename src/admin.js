@@ -193,7 +193,7 @@ function editorHTML() {
     '<button class="aBtn primary" type="button" data-a="publish">Сақтау және жариялау</button>' +
     (!ed.isNew ? '<button class="aBtn" type="button" data-a="preview">Алдын ала қарау</button>' : '') +
     (r && r.status === 'published' ? '<button class="aBtn" type="button" data-a="unpublish">Жариялаудан алу</button>' : '') +
-    (!ed.isNew ? '<button class="aBtn" type="button" data-a="revisions">Нұсқалар</button><button class="aBtn" type="button" data-a="acks">Танысқандар</button>' : '') +
+    (!ed.isNew ? '<button class="aBtn" type="button" data-a="revisions">Нұсқалар</button>' : '') +
     (!ed.isNew && isAdmin() && r.status !== 'published' ? '<button class="aBtn danger" type="button" data-a="delete">Өшіру</button>' : '') + '</div>';
   return '<div class="aCard"><div class="aRow"><button class="aBtn ghost" type="button" data-a="back">← Есептер тізімі</button><h3 class="edTitle">' + T.short + ' · ' + esc(T.name) + (ed.isNew ? ' — жаңа есеп' : '') + '</h3>' + (r ? statusChip(r) : '') + '</div>' + head + '</div>' +
     lowc + msgs + form + actions;
@@ -431,16 +431,7 @@ function reportAction(kind) {
       };
     }).catch(function (e) { toast(e.message, 'bad'); });
   }
-  if (kind === 'acks') {
-    return api('GET', '/api/reports?id=' + encodeURIComponent(r.id) + '&acks=1').then(function (x) {
-      var m = $('#modal');
-      m.innerHTML = '<div class="modalBox wide"><h4>Кім таныстық</h4>' + (x.acks.length ? '<div class="aTableWrap"><table class="aTable"><thead><tr><th>Кім</th><th>Нұсқа</th><th>Қашан</th></tr></thead><tbody>' + x.acks.map(function (a) {
-        return '<tr><td>' + esc(a.display_name) + ' <small>' + esc(ROLE_NAME[a.role] || '') + '</small></td><td>' + a.published_rev + (a.published_rev < r.published_rev ? ' <small>(ескі)</small>' : '') + '</td><td>' + esc(fmtDate(a.at)) + '</td></tr>';
-      }).join('') + '</tbody></table></div>' : '<p>Әзірге ешкім белгі қоймаған.</p>') + '<div class="aRow"><button class="aBtn" type="button" data-close>Жабу</button></div></div>';
-      m.hidden = false;
-      m.onclick = function (ev) { if (ev.target === m || (ev.target.closest && ev.target.closest('[data-close]'))) { m.hidden = true; m.onclick = null; } };
-    });
-  }
+
 }
 
 /* ---------------- import ---------------- */
@@ -610,7 +601,7 @@ function usersHTML() {
   if (!AD.usersLoaded) { AD.usersLoaded = true; api('GET', '/api/users').then(function (x) { AD.users = x.users; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); }); }
   var u = AD.userEdit || { role: 'viewer', scope: {} };
   var chk = function (name, list, items) { return items.map(function (x) { return '<label class="aCheck"><input type="checkbox" name="' + name + '" value="' + esc(x[0]) + '"' + ((list || []).indexOf(x[0]) >= 0 ? ' checked' : '') + '>' + esc(x[1]) + '</label>'; }).join(''); };
-  return '<div class="aCard"><h3>' + (u.id ? 'Аккаунтты өзгерту: ' + esc(u.username) : 'Жаңа аккаунт') + '</h3><p class="aHint">Әр адамға жеке аккаунт. Көруші — жарияланған есептерді көреді және «Таныстым» қояды; ментор — есеп енгізеді; әкімші — бәрі. Мұғалімді профиліне байланыстырсаңыз, «Таныстым» оның өз есептеріне қойылады. Нақты аккаунттарды тек әкімші жасайды.</p>' +
+  return '<div class="aCard"><h3>' + (u.id ? 'Аккаунтты өзгерту: ' + esc(u.username) : 'Жаңа аккаунт') + '</h3><p class="aHint">Әр адамға жеке аккаунт. Көруші — жарияланған есептерді көреді; ментор — есеп енгізеді; әкімші — бәрі. Нақты аккаунттарды тек әкімші жасайды.</p>' +
     '<div class="aRow"><label class="aField"><span>Логин</span><input class="aIn" name="u-username" value="' + esc(u.username || '') + '" autocomplete="off"></label><label class="aField"><span>Аты-жөні</span><input class="aIn" name="u-display" value="' + esc(u.displayName || '') + '"></label>' +
     sel('', u.role, [['viewer', 'Көруші (мұғалім / команда)'], ['mentor', 'Ментор'], ['admin', 'Әкімші']], { label: 'Рөлі', name: 'u-role' }) +
     sel('', u.teacherId || '', [['', '— мұғалімге байланыссыз —']].concat(cat().teachers.map(function (t) { return [t.id, t.full_name]; })), { label: 'Мұғалім профилі', name: 'u-teacher' }) +
@@ -874,7 +865,7 @@ adminEl.addEventListener('click', function (ev) {
     }
     if (a === 'save') { saveReport(false); return; }
     if (a === 'publish') { saveReport(true); return; }
-    if (['preview', 'unpublish', 'delete', 'revisions', 'acks'].indexOf(a) >= 0) { reportAction(a); return; }
+    if (['preview', 'unpublish', 'delete', 'revisions'].indexOf(a) >= 0) { reportAction(a); return; }
     if (a === 'bt-all-subjects') {
       var sid = AD.ed.isNew ? AD.ed.meta.stream_id : AD.ed.report.stream_id;
       var have = (AD.ed.data.subjects || []).map(function (s) { return s.subjectId; });

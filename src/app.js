@@ -1,7 +1,7 @@
 /* SMART PRO кері байланыс беті. Қаңқасы мен көрнекі тілі keribailanys (lskb/src/app.js) бетінен:
    қою көк кіріспе, мұғалімдер тізімі, әр мұғалімге бір толық бөлім (ірі фото, ірі сандар), қорытынды мен
-   «Таныстым». Кеңейтілгені: ЛС / СТ / БТ, үш ағым, 16 пән (іздеуі бар топталған таңдау), комбинациялар,
-   динамика, тікелей сілтеме, серверлік «Таныстым». Есептеу ережелері lib/calc.js-тен (жоғарыда енгізілген). */
+   қорытынды. Кеңейтілгені: ЛС / СТ / БТ, үш ағым, 16 пән (іздеуі бар топталған таңдау), комбинациялар,
+   динамика, тікелей сілтеме. Есептеу ережелері lib/calc.js-тен (жоғарыда енгізілген). */
 
 /* ================= helpers ================= */
 var $ = function (s, el) { return (el || document).querySelector(s); };
@@ -512,13 +512,10 @@ function fmtDate(iso) {
   var d = new Date(iso); if (isNaN(d)) return '';
   return d.toLocaleString('kk-KZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
+/** Бөлімнің соңындағы батырмалар: тікелей сілтеме және (ментор/әкімшіге) өңдеу. */
 function ackInline(e) {
-  if (!S.user) return '';
-  var acked = e.ack && e.ack.rev === e.publishedRev;
-  var older = e.ack && e.ack.rev < e.publishedRev;
-  if (e.draft) return '';
-  return '<div class="ackInline" data-ack-wrap="' + esc(e.id) + '">' + (acked ? '<span class="ackOk"><span class="ackTick">✓</span>Таныстыңыз · ' + esc(fmtDate(e.ack.at)) + '</span>' :
-    '<button class="ackSmall" type="button" data-ack="' + esc(e.id) + '">Таныстым</button>' + (older ? '<span class="ackOld">Есеп жаңартылды — бұрын ' + e.ack.rev + '-нұсқамен танысқансыз</span>' : '')) +
+  if (!S.user && !(S.session && S.session.publicView)) return '';
+  return '<div class="ackInline">' +
     '<button class="linkBtn" type="button" data-link="' + esc(e.id) + '" title="Осы есепке тікелей сілтеме">Сілтеме</button>' +
     (canEdit() ? '<button class="linkBtn" type="button" data-edit="' + esc(e.id) + '">Өңдеу</button>' : '') + '</div>';
 }
@@ -654,7 +651,7 @@ function btOverallAct(b, i) {
     btMeta(b) + btAck(b) + '</div>' + ACT_CLOSE;
 }
 function btMeta(b) { return '<p class="meta">' + (b.updatedBy ? 'Енгізген: ' + esc(b.updatedBy) + ' · ' : '') + 'жаңартылды ' + esc(fmtDate(b.updatedAt)) + ' · Дереккөз: ментор</p>'; }
-function btAck(b) { return ackInline({ id: b.id, ack: b.ack, publishedRev: b.publishedRev, draft: b.draft, type: 'bt' }); }
+function btAck(b) { return ackInline({ id: b.id }); }
 function btSubjectAct(b, s, i) {
   var t = s.teacher;
   var fake = { id: s.subjectId || s.label, glyph: s.glyph || (s.label || '').slice(0, 2) };
@@ -673,33 +670,12 @@ function btSubjectAct(b, s, i) {
 
 /* ---------- outro ---------- */
 function outroHTML(theme, stats) {
-  var ownIds = myAckTargets();
-  var pending = ownIds.filter(function (x) { return !x.done; });
-  var who = S.user && S.user.teacherId ? 'Өз есептеріңіз' : 'Көрсетілген есептер';
-  var ack = !S.user ? '<p class="outroText">«Таныстым» белгісін қою үшін жүйеге кіріңіз.</p>' :
-    !ownIds.length ? '' :
-    pending.length ? '<button class="ackBtn" type="button" id="ackAll">Таныстым</button><p class="ackHint">' + who + ': ' + pending.length + ' есеп. Белгі сіздің аккаунтыңызға және есептің осы нұсқасына сақталады.</p>' :
-    ackMsgHTML(false);
   return '<section class="act outro" data-theme="' + theme + '"><div class="pin"><div class="ambient"></div><div class="outroRing"></div><div class="flow">' +
     '<p class="outroEyebrow">' + esc(stats.period) + ' · қорытынды</p><h2 class="outroTitle">Еңбектеріңізге алғыс!</h2>' +
     '<p class="outroText">Бұл сандар — оқушылардың шын дауысы және ментордың талдауы. Келесі кезеңде де прогресс жасайтынымызға сенеміз.</p>' +
     '<p class="outroStat">' + stats.items.map(function (s) { return '<span>' + esc(s[0]) + ' <b>' + s[1] + '</b></span>'; }).join('') + '</p>' +
-    '<div class="ackWrap" id="ackWrap">' + ack + '</div>' +
     '<div class="footMark"><span class="footDot"></span><span class="footText">JUZ40 · SMART PRO</span></div>' +
     '</div></div></section>';
-}
-function ackMsgHTML(anim) {
-  return '<div class="ackDone"' + (anim ? ' data-anim' : '') + '><div class="ackLogo" role="img" aria-label="JUZ40">' + logoSVG('ackSvg') + '<span class="ackFlash" aria-hidden="true"></span></div>' +
-    '<p class="ackMsg"><span class="ackTick">✓</span>Рақмет! Келесі кезеңде кездескенше.</p></div>';
-}
-/** «Таныстым» нысаны: мұғалім аккаунты — өз есептері; команда көрушісі — көрсетілген барлық есеп. */
-function myAckTargets() {
-  if (!S.view || !S.user) return [];
-  var list = F.type === 'bt' ? S.view.bt.map(function (b) { return { id: b.id, ack: b.ack, rev: b.publishedRev, draft: b.draft, teachers: b.subjects.map(function (s) { return s.teacher && s.teacher.id; }) }; })
-    : S.view.entries.map(function (e) { return { id: e.id, ack: e.ack, rev: e.publishedRev, draft: e.draft, teachers: [e.teacher && e.teacher.id] }; });
-  list = list.filter(function (x) { return !x.draft; });
-  if (S.user.teacherId) list = list.filter(function (x) { return x.teachers.indexOf(S.user.teacherId) >= 0; });
-  return list.map(function (x) { return { id: x.id, done: !!(x.ack && x.ack.rev === x.rev) }; });
 }
 function outroStats() {
   var v = S.view, period = (v.periods.filter(function (p) { return p.key === v.period; })[0] || {}).label || '';
@@ -973,7 +949,7 @@ document.addEventListener('visibilitychange', function () {
   if (document.hidden) rain.run = false; else if (!rain.run) { rain.run = true; rain.last = 0; requestAnimationFrame(rainLoop); }
 });
 
-/* ================= curtain + finale (lskb) ================= */
+/* ================= curtain (lskb) ================= */
 function jumpTop() { try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); } }
 var curtainBusy = false;
 function curtainEmblem() { var s = subjOf(F.subject); return s ? subjTile(s, 'curtainTile') : spTile('curtainTile'); }
@@ -991,55 +967,6 @@ function withCurtain(swap) {
     setTimeout(function () { c.hidden = true; c.removeAttribute('data-out'); curtainBusy = false; }, 460);
   }, 900);
 }
-function finaleEmblem() {
-  var E = EMBLEM.juz40;
-  return '<svg viewBox="' + E.vb + '" aria-hidden="true"><defs><linearGradient id="zg-finale" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--z1)"/><stop offset=".48" style="stop-color:var(--z2)"/><stop offset="1" style="stop-color:var(--z3)"/></linearGradient></defs>' +
-    '<path fill="url(#zg-finale)" fill-rule="evenodd" d="' + E.d + '"/></svg>';
-}
-function finale() {
-  if (curtainBusy) return;
-  if (reduceMotion) { jumpTop(); return; }
-  curtainBusy = true;
-  var c = $('#curtain'), html = document.documentElement, back, timer;
-  c.setAttribute('data-mode', 'finale');
-  $('#curtainZ').innerHTML = finaleEmblem();
-  c.removeAttribute('data-out'); c.hidden = false;
-  html.classList.add('finaleOn');
-  $$('#curtain, #curtain *').forEach(function (el) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
-  function onKey(e) { if (e.key === 'Escape') back(); }
-  back = function () {
-    if (!timer) return;
-    clearTimeout(timer); timer = null;
-    document.removeEventListener('keydown', onKey, true);
-    c.removeEventListener('click', back);
-    jumpTop();
-    var intro = $('.act.intro');
-    if (intro) { intro.classList.remove('boot'); void intro.offsetWidth; intro.classList.add('boot'); }
-    c.setAttribute('data-out', '');
-    setTimeout(function () { c.hidden = true; c.removeAttribute('data-out'); c.removeAttribute('data-mode'); html.classList.remove('finaleOn'); curtainBusy = false; }, 720);
-  };
-  timer = setTimeout(back, 3500);
-  document.addEventListener('keydown', onKey, true);
-  c.addEventListener('click', back);
-}
-
-/* ================= acknowledgements ================= */
-function ackOne(id) {
-  return api('POST', '/api/ack', { reportId: id }).then(function (r) {
-    var list = F.type === 'bt' ? S.view.bt : S.view.entries;
-    list.forEach(function (e) { if (e.id === id) e.ack = { rev: r.rev, at: r.at }; });
-    return r;
-  });
-}
-function refreshAckUI() {
-  $$('[data-ack-wrap]').forEach(function (w) {
-    var id = w.getAttribute('data-ack-wrap');
-    var list = F.type === 'bt' ? S.view.bt : S.view.entries, e = null;
-    list.forEach(function (x) { if (x.id === id) e = x; });
-    if (e) w.outerHTML = ackInline({ id: e.id, ack: e.ack, publishedRev: e.publishedRev, draft: e.draft, type: F.type });
-  });
-}
-
 /* ================= events ================= */
 document.addEventListener('click', function (ev) {
   var t = ev.target;
@@ -1079,22 +1006,6 @@ document.addEventListener('click', function (ev) {
     return;
   }
   if (t.closest('#hdrHome')) { ev.preventDefault(); window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); return; }
-  var ak = t.closest('[data-ack]');
-  if (ak) {
-    ak.disabled = true;
-    ackOne(ak.getAttribute('data-ack')).then(function () { refreshAckUI(); toast('Белгі сақталды'); }).catch(function (e) { ak.disabled = false; toast(e.message, 'bad'); });
-    return;
-  }
-  if (t.closest('#ackAll')) {
-    var btn = $('#ackAll'); btn.disabled = true;
-    var todo = myAckTargets().filter(function (x) { return !x.done; });
-    Promise.all(todo.map(function (x) { return ackOne(x.id); })).then(function () {
-      $('#ackWrap').innerHTML = ackMsgHTML(false);
-      refreshAckUI();
-      finale();
-    }).catch(function (e) { btn.disabled = false; toast(e.message, 'bad'); });
-    return;
-  }
   var lk = t.closest('[data-link]');
   if (lk) {
     var url = location.origin + urlFor('#r-' + lk.getAttribute('data-link')).replace(/[?&]drafts=1/, '');

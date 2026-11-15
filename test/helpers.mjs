@@ -33,7 +33,7 @@ export async function call(handler, { method = 'GET', url = '/', body, cookie } 
 }
 
 export async function api() {
-  const names = ['session', 'view', 'catalog', 'reports', 'ack', 'users', 'import', 'audit', 'photo'];
+  const names = ['session', 'view', 'catalog', 'reports', 'users', 'import', 'audit', 'photo'];
   const out = {};
   for (const n of names) out[n] = (await import(`../api/${n}.js`)).default;
   return out;

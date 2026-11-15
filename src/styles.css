@@ -793,3 +793,13 @@ code{font-size:12px}
 .task .katex{font-size:1.04em}
 .taskText .katex-display{margin:.4em 0;overflow-x:auto;overflow-y:hidden}
 @media (max-width:760px){.opt{grid-template-columns:28px minmax(0,1fr);}.optBar{grid-column:2}.optN{grid-column:2}}
+/* Мұғалімнің суреті әр бөлімнің басында (ортасында емес) */
+.act.teacher .row{align-items:flex-start}
+.act.teacher .photoCol{align-self:flex-start;justify-content:center;padding-top:6px}
+.act.teacher .photoFrame{height:min(52vh,480px)}
+@media (max-width:760px){
+  .act.teacher .row{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
+  .act.teacher .photoCol{order:-1;padding-top:0;justify-content:flex-start;align-self:stretch;flex:none;width:100%}
+  .act.teacher .photoFloat{width:min(52%,210px)}
+  .act.teacher .photoFrame{height:auto}
+}
