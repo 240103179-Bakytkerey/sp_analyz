@@ -406,7 +406,7 @@ function emptyHTML(hasAny) {
 function rosterMetrics(e) {
   var m = e.metrics;
   if (e.type === 'ls') return '<span>Ұнату <b>' + fmtPct(m.like.pct) + '</b></span><span>Қатысым <b>' + fmtPct(m.attendance.pct) + '</b></span>';
-  return '<span>Балл <b>' + fmtNum(m.score, 1) + (isNum(m.max) ? '<small>/' + fmtNum(m.max) + '</small>' : '') + '</b></span><span>Қайта тапсыру <b>' + fmtPct(m.retake && m.retake.pct, 1) + '</b></span>';
+  return '<span>Балл <b>' + fmtNum(m.score) + (isNum(m.max) ? '<small>/' + fmtNum(m.max) + '</small>' : '') + '</b></span><span>Қайта тапсыру <b>' + fmtPct(m.retake && m.retake.pct) + '</b></span>';
 }
 function comboChips(ids) {
   if (!ids.length) return '';
@@ -567,7 +567,7 @@ function optionsHTML(t) {
         '<span class="optT">' + (o.html ? '<span class="rich">' + o.html + '</span>' : '<span class="rich">' + chemSub(inline(o.text || '')) + '</span>') +
         (o.image ? '<img src="' + esc(o.image) + '" alt="' + LETTERS.charAt(i) + ' нұсқасының суреті" loading="lazy">' : '') +
         (o.correct ? '<em class="optTag">дұрыс жауап</em>' : trap ? '<em class="optTag">ең көп таңдалған қате</em>' : '') + '</span>' +
-        (known ? '<span class="optBar"><span style="width:' + (pct || 0).toFixed(1) + '%"></span></span><span class="optN"><b>' + o.picks + '</b>' + (pct != null ? ' · ' + fmtNum(pct, 0) + '%' : '') + '</span>' : '') +
+        (known ? '<span class="optBar"><span style="width:' + (pct || 0).toFixed(1) + '%"></span></span><span class="optN"><b>' + o.picks + '</b>' + (pct != null ? ' · ' + fmtNum(pct) + '%' : '') + '</span>' : '') +
         '</div>';
     }).join('') + '</div>';
 }
@@ -580,7 +580,7 @@ function taskHTML(t) {
   return '<article class="task"><header class="taskHead">' +
     (isNum(t.variant) ? '<span class="chipS">' + t.variant + '-нұсқа</span>' : '') + (isNum(t.q) ? '<span class="chipS">№' + t.q + '</span>' : '') +
     (t.topic ? '<span class="chipS ghost">' + esc(t.topic) + '</span>' : '') +
-    (isNum(t.wrongPct) ? '<span class="taskPct"><b>' + fmtNum(t.wrongPct, 0) + '%</b> қателесті</span>' : '') + '</header>' +
+    (isNum(t.wrongPct) ? '<span class="taskPct"><b>' + fmtNum(t.wrongPct) + '%</b> қателесті</span>' : '') + '</header>' +
     (t.title ? '<h4 class="taskTitle">' + inline(t.title) + '</h4>' : '') + body +
     (t.images && t.images.length ? '<div class="taskImgs">' + t.images.filter(function (u) { return /^(https?:|\/api\/)/.test(u); }).map(function (u) { return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="Есептің суреті" loading="lazy"></a>'; }).join('') + '</div>' : '') +
     optionsHTML(t) + pairsHTML(t) +
@@ -597,16 +597,16 @@ function stPanel(e, i) {
   return '<div class="textCol">' + badges(e) +
     '<h2 class="name">' + esc(e.stream.short) + ' <i>|</i> ' + esc(e.teacher ? e.teacher.name : '—') + '</h2>' +
     (m.missing ? '<p class="emptyNote">Бұл комбинацияға жеке нәтиже енгізілмеген.</p>' :
-    '<div class="pctRow"><span class="pctNum">' + fmtNum(m.score, 1) + '</span><span class="pctSign">' + (isNum(m.max) ? '/' + fmtNum(m.max) : '') + '</span><span class="pctCap">ортақ<br>балл</span></div>' +
+    '<div class="pctRow"><span class="pctNum">' + fmtNum(m.score) + '</span><span class="pctSign">' + (isNum(m.max) ? '/' + fmtNum(m.max) : '') + '</span><span class="pctCap">ортақ<br>балл</span></div>' +
     (isNum(m.score) && isNum(m.max) && m.max > 0 ? '<div class="pctTrack"><div class="pctFill" style="--pct:' + (100 * m.score / m.max).toFixed(2) + '"></div></div>' : '') +
     (m.reason === 'no_weights' ? '<p class="meta warnNote">Комбинациялардың тапсырған саны белгісіз — жай орташа жалпы нәтиже ретінде көрсетілмейді.</p>' : '') +
     '<div class="dynRow">' + dynChip(dyn, dyn && dyn.score, { big: true }) + '</div>' + flagsHTML(dyn) +
     '<p class="meta">' + esc(srcName) + (m.source === 'platform' && e.data.scoreMethod === 'groups' && e.data.groupCount ? ' · ' + e.data.groupCount + ' топтың орташа балдарының орташасы' : m.source === 'platform' && e.data.scoreMethod === 'students' ? ' · барлық оқушы бойынша' : '') + (isNum(m.submitted) ? ' · ' + fmtInt(m.submitted) + ' оқушы тапсырды' + (isNum(m.total) ? ' (' + fmtInt(m.total) + ' ішінен)' : '') : '') + '</p>' +
-    '<div class="attendance"><span class="attendanceLabel">Қайта тапсыру</span><strong>' + fmtPct(r.pct, 1) + '</strong><span class="attendanceDetail">' + esc(retakeDetail) + '</span>' +
+    '<div class="attendance"><span class="attendanceLabel">Қайта тапсыру</span><strong>' + fmtPct(r.pct) + '</strong><span class="attendanceDetail">' + esc(retakeDetail) + '</span>' +
     (dyn && dyn.status === 'ok' ? '<span class="attendanceDyn">' + dynChip(dyn, dyn.retake) + '</span>' : '') + '</div>') +
     (combos.length ? '<div class="miniTable"><p class="blockTitle">Комбинациялар бойынша</p><table><thead><tr><th></th><th>Балл</th><th>Тапсырды</th><th>Қайта тапсыру</th></tr></thead><tbody>' + combos.map(function (b) {
       var c = comboOf(b.comboId), x = b.metrics;
-      return '<tr><th>' + esc(c ? c.code : b.comboId) + '</th><td>' + fmtNum(x.score, 1) + (isNum(x.max) ? '<small>/' + fmtNum(x.max) + '</small>' : '') + '</td><td>' + fmtInt(x.submitted) + '</td><td>' + fmtPct(x.retake.pct, 1) + (isNum(x.retake.count) ? ' <small>' + x.retake.count + (isNum(x.retake.base) ? '/' + x.retake.base : '') + '</small>' : '') + '</td></tr>' +
+      return '<tr><th>' + esc(c ? c.code : b.comboId) + '</th><td>' + fmtNum(x.score) + (isNum(x.max) ? '<small>/' + fmtNum(x.max) + '</small>' : '') + '</td><td>' + fmtInt(x.submitted) + '</td><td>' + fmtPct(x.retake.pct) + (isNum(x.retake.count) ? ' <small>' + x.retake.count + (isNum(x.retake.base) ? '/' + x.retake.base : '') + '</small>' : '') + '</td></tr>' +
         (x.note ? '<tr class="noteRow"><td></td><td colspan="3">' + inline(x.note) + '</td></tr>' : '');
     }).join('') + '</tbody></table></div>' : '') +
     (F.combo !== 'all' && m.note ? mentorHTML('Комбинация бойынша талдау', m.note) : '') +
@@ -638,13 +638,13 @@ function btOverallAct(b, i) {
     (b.scope ? '<span class="pill line">' + esc(b.scope.code) + '</span>' : '') + (b.period.cohort ? '<span class="pill line">' + esc(b.period.cohort) + '</span>' : '') +
     (b.draft ? '<span class="pill draftPill">Жоба · жарияланбаған</span>' : '') + (b.demo ? '<span class="pill demoPill">Демо деректер</span>' : '') + '</div>' +
     '<h2 class="name">' + esc(b.stream.short) + (b.scope ? ' <i>|</i> ' + esc(b.scope.code) : '') + ' <i>|</i> Жалпы нәтиже</h2>' +
-    '<div class="pctRow"><span class="pctNum">' + fmtNum(o.avg, 1) + '</span><span class="pctSign">' + (isNum(o.max) ? '/' + fmtNum(o.max) : '') + '</span><span class="pctCap">жалпы<br>ортақ балл</span></div>' +
+    '<div class="pctRow"><span class="pctNum">' + fmtNum(o.avg) + '</span><span class="pctSign">' + (isNum(o.max) ? '/' + fmtNum(o.max) : '') + '</span><span class="pctCap">жалпы<br>ортақ балл</span></div>' +
     '<div class="dynRow">' + dynChip(b.dynamics, b.dynamics && b.dynamics.score, { big: true }) + '</div>' + flagsHTML(b.dynamics) +
     '<p class="meta">' + (isNum(b.participants) ? fmtInt(b.participants) + ' оқушы тапсырды · ' : '') + b.allSubjects + ' пән/көрсеткіш</p>' +
     '<div class="btGrid">' +
     (b.top3.length ? '<div class="mentorBlock"><p class="blockTitle">Жалпы ТОП-3</p>' + topList(b.top3) + '</div>' : '') +
     (b.subjects.length ? '<div class="miniTable"><p class="blockTitle">Пәндер бойынша ортақ балл</p><table><tbody>' + b.subjects.map(function (s) {
-      return '<tr><th>' + esc(s.label) + (s.extra ? ' <small>қосымша</small>' : '') + '</th><td>' + fmtNum(s.avg, 1) + (isNum(s.max) ? '<small>/' + fmtNum(s.max) + '</small>' : '') + '</td><td>' + (s.dynamics.status === 'ok' ? esc(fmtDelta(s.dynamics.score)) : '') + '</td></tr>';
+      return '<tr><th>' + esc(s.label) + (s.extra ? ' <small>қосымша</small>' : '') + '</th><td>' + fmtNum(s.avg) + (isNum(s.max) ? '<small>/' + fmtNum(s.max) + '</small>' : '') + '</td><td>' + (s.dynamics.status === 'ok' ? esc(fmtDelta(s.dynamics.score)) : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>' : '') + '</div>' +
     (b.hardTopics.length ? '<div class="mentorBlock"><p class="blockTitle">Ең қиын тақырыптар</p><ul class="plain">' + b.hardTopics.map(function (t) { return '<li>' + inline(t) + '</li>'; }).join('') + '</ul></div>' : '') +
     mentorHTML('Жалпы талдау', b.analysis) + mentorHTML('Келесі кезеңге әрекет жоспары', b.actionPlan, 'tips') +
@@ -658,10 +658,10 @@ function btSubjectAct(b, s, i) {
   return actOpen(i, ' data-bt-subj="' + esc(b.id + ':' + (s.subjectId || s.label)) + '"', s.subjectId || 'all') + '<div class="textCol">' +
     '<div class="badges"><span class="pill solid">' + esc(s.label) + '</span><span class="pill ghost">БТ · ' + esc(b.period.label) + '</span><span class="pill ghost">' + esc(b.stream.name) + '</span>' + (b.scope ? '<span class="pill line">' + esc(b.scope.code) + '</span>' : '') + (s.extra ? '<span class="pill line">Қосымша көрсеткіш</span>' : '') + '</div>' +
     '<h2 class="name">' + esc(b.stream.short) + ' <i>|</i> ' + esc(t ? t.name : s.label) + '</h2>' +
-    '<div class="pctRow"><span class="pctNum">' + fmtNum(s.avg, 1) + '</span><span class="pctSign">' + (isNum(s.max) ? '/' + fmtNum(s.max) : '') + '</span><span class="pctCap">пәннің<br>ортақ балы</span></div>' +
+    '<div class="pctRow"><span class="pctNum">' + fmtNum(s.avg) + '</span><span class="pctSign">' + (isNum(s.max) ? '/' + fmtNum(s.max) : '') + '</span><span class="pctCap">пәннің<br>ортақ балы</span></div>' +
     (isNum(s.avg) && isNum(s.max) && s.max > 0 ? '<div class="pctTrack"><div class="pctFill" style="--pct:' + (100 * s.avg / s.max).toFixed(2) + '"></div></div>' : '') +
     '<div class="dynRow">' + dynChip(s.dynamics, s.dynamics && s.dynamics.score, { big: true }) + '</div>' +
-    '<p class="meta">Жалпы контекст: ' + fmtNum(b.overall && b.overall.avg, 1) + (b.overall && isNum(b.overall.max) ? '/' + fmtNum(b.overall.max) : '') + ' жалпы ортақ балл' + (isNum(s.participants) ? ' · ' + fmtInt(s.participants) + ' оқушы' : '') + '</p>' +
+    '<p class="meta">Жалпы контекст: ' + fmtNum(b.overall && b.overall.avg) + (b.overall && isNum(b.overall.max) ? '/' + fmtNum(b.overall.max) : '') + ' жалпы ортақ балл' + (isNum(s.participants) ? ' · ' + fmtInt(s.participants) + ' оқушы' : '') + '</p>' +
     (s.top3.length ? '<div class="mentorBlock"><p class="blockTitle">Пән бойынша ТОП-3</p>' + topList(s.top3) + '</div>' : '') +
     (s.hardTopics.length ? '<div class="mentorBlock"><p class="blockTitle">Ең қиын тақырыптар</p><ul class="plain">' + s.hardTopics.map(function (x) { return '<li>' + inline(x) + '</li>'; }).join('') + '</ul></div>' : '') +
     mentorHTML('Мұғалімге ұсыныс', s.recommendation, 'tips') + '</div>' +
@@ -758,8 +758,8 @@ function btRosterHTML(list, period) {
     '<p class="rosterHint">Жалпы есепті немесе өз пәніңізді таңдаңыз. Бір БТ есебі барлық пәнге ортақ: әр мұғалім өз пәнінің нәтижесін және жалпы контекстті көреді.</p>' +
     comboChips(combosIn) +
     list.map(function (b) {
-      var items = [{ label: 'Жалпы нәтиже', sub: (b.scope ? b.scope.code + ' · ' : '') + b.stream.short, metric: fmtNum(b.overall && b.overall.avg, 1), idx: i++, glyph: 'БТ' }];
-      b.subjects.forEach(function (s) { items.push({ label: s.teacher ? s.teacher.name : s.label, sub: s.label + ' · ' + b.stream.short, metric: fmtNum(s.avg, 1) + (isNum(s.max) ? '<small>/' + fmtNum(s.max) + '</small>' : ''), idx: i++, photo: s.teacher && s.teacher.photo, glyph: s.glyph || s.label.slice(0, 2) }); });
+      var items = [{ label: 'Жалпы нәтиже', sub: (b.scope ? b.scope.code + ' · ' : '') + b.stream.short, metric: fmtNum(b.overall && b.overall.avg), idx: i++, glyph: 'БТ' }];
+      b.subjects.forEach(function (s) { items.push({ label: s.teacher ? s.teacher.name : s.label, sub: s.label + ' · ' + b.stream.short, metric: fmtNum(s.avg) + (isNum(s.max) ? '<small>/' + fmtNum(s.max) + '</small>' : ''), idx: i++, photo: s.teacher && s.teacher.photo, glyph: s.glyph || s.label.slice(0, 2) }); });
       return '<p class="rosterGroup"><span>' + esc(b.stream.name) + (b.scope ? ' · ' + esc(b.scope.code) : '') + '</span></p><div class="rosterGrid">' + items.map(function (x) {
         return '<button class="rosterItem" type="button" data-go="' + x.idx + '"><span class="rosterNum">' + pad2(x.idx) + '</span>' +
           '<span class="rosterPh">' + (x.photo ? '<img src="' + esc(x.photo) + '" alt="" loading="lazy">' : '<b>' + esc(x.photo === undefined ? x.glyph : initials(x.label)) + '</b>') + '</span>' +

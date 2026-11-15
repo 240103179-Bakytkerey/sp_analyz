@@ -301,7 +301,7 @@ function stForm(d) {
 function stSummary(d) {
   var o = stOverall(d), r = stRetakeOverall(d);
   var src = { platform: 'платформа', manual: 'қолмен', weighted: 'салмақталған' }[o.source] || (o.reason === 'no_weights' ? 'тапсырған саны белгісіз — есептелмейді' : o.reason === 'max_differs' ? 'максимал балдар әртүрлі' : 'дерек жоқ');
-  return '<h3>Есептеу (алдын ала)</h3><p>Жалпы ортақ балл: <b>' + fmtNum(o.score) + (isNum(o.max) ? ' / ' + fmtNum(o.max) : '') + '</b> <small>(' + src + ')</small> · Қайта тапсыру: <b>' + fmtPct(r.pct, 1) + '</b> <small>' + (r.source === 'counts' || r.source === 'weighted' ? r.count + '/' + r.base : r.source === 'reported' ? 'дереккөз %' : r.reason === 'no_base' ? 'бөлгіш белгісіз' : '') + '</small></p>' +
+  return '<h3>Есептеу (алдын ала)</h3><p>Жалпы ортақ балл: <b>' + fmtNum(o.score) + (isNum(o.max) ? ' / ' + fmtNum(o.max) : '') + '</b> <small>(' + src + ')</small> · Қайта тапсыру: <b>' + fmtPct(r.pct) + '</b> <small>' + (r.source === 'counts' || r.source === 'weighted' ? r.count + '/' + r.base : r.source === 'reported' ? 'дереккөз %' : r.reason === 'no_base' ? 'бөлгіш белгісіз' : '') + '</small></p>' +
     '<p class="aSrc">Салмақталған: Σ(балл × тапсырған) ÷ Σ тапсырған. Жай орташа жалпы нәтиже ретінде қолданылмайды.</p>';
 }
 function topRows(path, list) {

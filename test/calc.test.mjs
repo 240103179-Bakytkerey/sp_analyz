@@ -134,3 +134,10 @@ test('ТОП-3: тең баллдар бір орында', () => {
   const manual = rankTop([{ name: 'X' }, { name: 'Y', score: 3 }]);
   assert.deepEqual(manual.map((x) => x.name), ['X', 'Y']);
 });
+
+test('барлық көрсеткіш үтірден кейін ең көбі 2 таңба', () => {
+  assert.equal(fmtPct((56 / 61) * 100), '91,8%');
+  assert.equal(fmtPct((2 / 3) * 100), '66,67%');
+  assert.equal(fmtPct(100), '100%');
+  assert.equal(fmtDelta(scoreDelta(15.666666, 20, 18.4, 20)), '−2,73 балл');
+});

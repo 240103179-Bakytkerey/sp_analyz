@@ -67,7 +67,7 @@ test('СТ импорты: топтардың орташасы, нұсқалар
   const rep = (await call(A.reports, { cookie: admin, url: `/api/reports?id=${r.body.reportId}` })).body.report;
   const t = rep.data.hardTasks[0];
   assert.match(t.text, /\$\$кокс/); // LaTeX сақталды — бетте KaTeX сызады
-  assert.equal(t.wrongPct, 64); // 7 / 11
+  assert.equal(t.wrongPct, 63.64); // 7 / 11, 2 ондық таңбаға дейін
   assert.deepEqual(t.options.map((o) => [o.correct, o.picks]), [[true, 4], [false, 7], [false, 0]]);
   assert.equal(t.options[2].html, 'Na<sub>2</sub>ZnO<sub>2</sub>');
   assert.equal(t.answered, 11);
