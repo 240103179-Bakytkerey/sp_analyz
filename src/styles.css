@@ -766,3 +766,6 @@ code{font-size:12px}
   .act.intro:has(.orbitWrap) .flow{padding-top:calc(150px + min(27vw,112px) * 2.7 + 8px);justify-content:flex-start}
   .root[data-anon] .act.intro:has(.orbitWrap) .flow{padding-top:calc(72px + min(27vw,112px) * 2.7 + 8px)}
 }
+.aRow.tight>.aSel{width:auto;flex:0 1 200px}
+.aRow.tight>.aIn{width:auto;flex:1 1 160px}
+.aRow.tight>code{align-self:center}

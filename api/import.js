@@ -10,6 +10,7 @@ import { getCatalog, assignmentAt, getMapping, setMapping, logImportRun, createR
 import { sapalineConfig, sapalinePeriods, sapalineRows, sapalineDiscover } from '../lib/sapaline.js';
 import { mergeLessons, norm } from '../lib/merge-ls.js';
 import { mergePlatformResult } from '../lib/merge-st.js';
+import { coursesOf, combineResults } from '../lib/platform-combine.js';
 import { parseTelegram } from '../lib/telegram.js';
 
 const EDITORS = ['admin', 'mentor'];
@@ -128,29 +129,40 @@ async function importSt(user, b) {
   const month = Number(b.month), week = Number(b.week);
   if (!(month >= 1 && week >= 1)) throw httpError(400, 'Оқу айы мен аптасы керек.');
   const key = `${streamId}.${subjectId}`;
-  const course = (cfg.courses || {})[key];
-  let result;
+  const courses = coursesOf(cfg, key);
+  let combined;
   if (b.mode === 'json') {
     // Резерв: analysis жүйесінен не платформадан алынған PlatformResult пішіміндегі JSON.
-    result = b.payload;
-    if (!result || typeof result !== 'object' || !('score' in result)) throw httpError(400, 'JSON-да «score» жоқ: PlatformResult пішімін қараңыз (README).');
-    result = { kind: 'st', month, week, groups: [], questionStats: [], tasks: [], topics: [], ...result };
+    const p = b.payload;
+    if (!p || typeof p !== 'object' || !('score' in p)) throw httpError(400, 'JSON-да «score» жоқ: PlatformResult пішімін қараңыз (README).');
+    combined = combineResults([{ course: { courseId: 'json', courseName: 'JSON' }, result: { kind: 'st', month, week, groups: [], questionStats: [], tasks: [], topics: [], ...p } }]);
   } else {
     if (!platformConfigured()) throw httpError(503, 'JUZ40 платформасының аккаунты бапталмаған (JUZ40_LOGIN / JUZ40_PASSWORD). JSON немесе қолмен енгізуді қолданыңыз.', 'platform_not_configured');
-    if (!course || !course.courseId) throw httpError(400, `${subj.name} (${streamId}) үшін платформадағы курс таңдалмаған: Әкімші → Импорт баптауы.`);
+    if (!courses.length) throw httpError(400, `${subj.name} (${streamId}) үшін платформадағы курс таңдалмаған: Әкімші → Импорт баптауы.`);
     const { fetchTestResult } = await import('../lib/platform.js');
-    try {
-      result = await fetchTestResult(course.courseId, 'st', month, week);
-    } catch (e) {
-      throw httpError(502, 'Платформадан оқу сәтсіз: ' + e.message, 'platform_error');
+    // Ағым × пәнге тіркелген барлық курс оқылады (бірінен кейін бірі — платформаға жүктеме аз).
+    const list = [];
+    for (const c of courses) {
+      try {
+        list.push({ course: c, result: await fetchTestResult(c.courseId, 'st', month, week) });
+      } catch (e) {
+        list.push({ course: c, result: null, error: e.message });
+      }
     }
-    if (!result) throw httpError(404, 'Платформада бұл аптаға СТ нәтижесі табылмады — бұрынғы деректер өзгертілмеді.', 'platform_empty');
+    if (!list.some((x) => x.result)) {
+      const errs = list.filter((x) => x.error).map((x) => `${x.course.courseName || x.course.courseId}: ${x.error}`);
+      throw httpError(errs.length ? 502 : 404, errs.length ? 'Платформадан оқу сәтсіз — ' + errs.join('; ') : 'Тіркелген курстардың ешқайсысында бұл аптаға СТ нәтижесі табылмады — бұрынғы деректер өзгертілмеді.', errs.length ? 'platform_error' : 'platform_empty');
+    }
+    combined = combineResults(list);
   }
+  const result = combined.result;
   const importedAt = new Date().toISOString();
-  const ctx = { courseId: course ? course.courseId : 'json', groupMap: (cfg.groups || {})[key] || {}, importedAt, actor: user.username, limit: Number(cfg.hardTaskLimit) || 10 };
+  const ctx = { courseIds: courses.length && b.mode !== 'json' ? courses.map((c) => c.courseId) : ['json'], perCourse: combined.perCourse, groupMap: (cfg.groups || {})[key] || {}, importedAt, actor: user.username, limit: Number(cfg.hardTaskLimit) || 10 };
   const period = await targetPeriod(user, streamId, month, week, !!b.apply);
   const existing = period.id ? await findReport('st', streamId, subjectId, period.id) : null;
   const merged = mergePlatformResult(existing && existing.data, result, ctx);
+  merged.summary.warnings.unshift(...combined.warnings, ...combined.perCourse.filter((c) => !c.found).map((c) => `«${c.courseName || c.courseId}» курсында бұл аптаға СТ табылмады${c.error ? ' (' + c.error + ')' : ''}.`));
+  merged.summary.courses = combined.perCourse;
   const out = { period: { label: period.label, exists: !!period.id }, reportId: existing ? existing.id : null, status: existing ? existing.status : 'new', summary: merged.summary };
   if (b.apply) {
     let rep = existing;
@@ -216,16 +228,20 @@ export default route({
     if (action === 'st') return importSt(user, b);
     if (action === 'platform-tests') {
       const cfg = await platCfg();
-      const course = (cfg.courses || {})[`${b.stream}.${b.subject}`];
+      const courses = coursesOf(cfg, `${b.stream}.${b.subject}`);
       if (!platformConfigured()) throw httpError(503, 'JUZ40_LOGIN / JUZ40_PASSWORD бапталмаған.', 'platform_not_configured');
-      if (!course) throw httpError(400, 'Бұл ағым мен пәнге платформадағы курс таңдалмаған.');
+      if (!courses.length) throw httpError(400, 'Бұл ағым мен пәнге платформадағы курс таңдалмаған.');
       const { discoverTests } = await import('../lib/platform.js');
-      try {
-        const { tests } = await discoverTests(course.courseId);
-        return { tests: tests.filter((t) => t.kind === 'st') };
-      } catch (e) {
-        throw httpError(502, e.message, 'platform_error');
+      const seen = new Map();
+      for (const c of courses) {
+        try {
+          const { tests } = await discoverTests(c.courseId);
+          tests.filter((t) => t.kind === 'st').forEach((t) => { const k = `${t.month}.${t.week}`; if (!seen.has(k)) seen.set(k, t); });
+        } catch (e) {
+          throw httpError(502, `${c.courseName || c.courseId}: ${e.message}`, 'platform_error');
+        }
       }
+      return { tests: [...seen.values()].sort((a, b2) => a.month - b2.month || a.week - b2.week) };
     }
     if (action === 'telegram') {
       const cat = await getCatalog();
