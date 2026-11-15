@@ -135,7 +135,7 @@ async function importSt(user, b) {
     // Резерв: analysis жүйесінен не платформадан алынған PlatformResult пішіміндегі JSON.
     const p = b.payload;
     if (!p || typeof p !== 'object' || !('score' in p)) throw httpError(400, 'JSON-да «score» жоқ: PlatformResult пішімін қараңыз (README).');
-    combined = combineResults([{ course: { courseId: 'json', courseName: 'JSON' }, result: { kind: 'st', month, week, groups: [], questionStats: [], tasks: [], topics: [], ...p } }]);
+    combined = combineResults([{ course: { courseId: 'json', courseName: 'JSON' }, result: { kind: 'st', month, week, groups: [], questionStats: [], tasks: [], topics: [], ...p } }], { method: cfg.scoreMethod });
   } else {
     if (!platformConfigured()) throw httpError(503, 'JUZ40 платформасының аккаунты бапталмаған (JUZ40_LOGIN / JUZ40_PASSWORD). JSON немесе қолмен енгізуді қолданыңыз.', 'platform_not_configured');
     if (!courses.length) throw httpError(400, `${subj.name} (${streamId}) үшін платформадағы курс таңдалмаған: Әкімші → Импорт баптауы.`);
@@ -153,7 +153,7 @@ async function importSt(user, b) {
       const errs = list.filter((x) => x.error).map((x) => `${x.course.courseName || x.course.courseId}: ${x.error}`);
       throw httpError(errs.length ? 502 : 404, errs.length ? 'Платформадан оқу сәтсіз — ' + errs.join('; ') : 'Тіркелген курстардың ешқайсысында бұл аптаға СТ нәтижесі табылмады — бұрынғы деректер өзгертілмеді.', errs.length ? 'platform_error' : 'platform_empty');
     }
-    combined = combineResults(list);
+    combined = combineResults(list, { method: cfg.scoreMethod });
   }
   const result = combined.result;
   const importedAt = new Date().toISOString();

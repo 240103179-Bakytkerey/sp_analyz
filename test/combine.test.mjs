@@ -10,12 +10,12 @@ const res = (score, submitted, max, wrongs) => ({
   tasks: [{ variant: 1, questions: wrongs.map((w, i) => ({ q: i + 1, text: i === 0 ? 'Ортақ есеп: H2SO4' : `Курсқа тән есеп ${score}`, images: [] })) }],
 });
 
-test('бірнеше курс: Σ(балл×тапсырған)/Σ тапсырған, курс комбинациясы, ортақ сұрақ біріктіріледі', () => {
+test('бірнеше курс («оқушылар бойынша» тәсілі): Σ(балл×тапсырған)/Σ тапсырған, курс комбинациясы, ортақ сұрақ біріктіріледі', () => {
   const c = combineResults([
     { course: { courseId: 'a', courseName: 'Химия БХ', comboId: 'c_bh' }, result: res(15, 30, 20, [15, 3]) },
     { course: { courseId: 'b', courseName: 'Химия ФХ', comboId: 'c_fh' }, result: res(18, 10, 20, [5, 1]) },
     { course: { courseId: 'c', courseName: 'Бос курс' }, result: null },
-  ]);
+  ], { method: 'students' });
   assert.equal(c.result.score, 15.75);
   assert.equal(c.result.submitted, 40);
   assert.deepEqual(c.result.courseCombos.map((x) => [x.comboId, x.score, x.submitted]), [['c_bh', 15, 30], ['c_fh', 18, 10]]);

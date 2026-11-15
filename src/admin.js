@@ -454,7 +454,7 @@ function importHTML() {
       var s = r.summary;
       return '<tr><td>' + esc(r.subject || '') + (r.teacher ? '<br><small>' + esc(r.teacher) + '</small>' : '') + '</td><td>' + (r.error ? '<span class="warnText">' + esc(r.error) + '</span>' + (r.details ? '<ul>' + r.details.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '') :
         s && 'lessons' in s ? s.lessons + ' сабақ · жаңа ' + s.added + ' · жаңартылды ' + s.updated + (s.kept ? ' · сақталды ' + s.kept : '') + (s.skipped.length ? '<br><small>' + s.skipped.length + ' жол өткізілді</small>' : '') :
-        s ? fmtNum(s.score) + '/' + fmtNum(s.max) + ' · ' + fmtInt(s.submitted) + ' тапсырды · ' + s.groups + ' топ · ' + s.hardTasks + ' тапсырма' +
+        s ? fmtNum(s.score) + '/' + fmtNum(s.max) + (s.scoreMethod === 'students' ? ' (оқушылар бойынша)' : ' (топтардың орташасы)') + ' · ' + fmtInt(s.submitted) + ' тапсырды · ' + s.groups + ' топ · ' + s.hardTasks + ' тапсырма' +
           (s.courses && s.courses.length > 1 ? '<ul class="plain small">' + s.courses.map(function (c) { return '<li>' + esc(c.courseName || c.courseId) + (c.comboId ? ' (' + esc((comboOf(c.comboId) || {}).code || '') + ')' : '') + ': ' + (c.found ? fmtNum(c.score) + '/' + fmtNum(c.max) + ' · ' + fmtInt(c.submitted) + ' оқушы' : 'СТ табылмады') + '</li>'; }).join('') + '</ul>' : '') : '') + (r.applied ? '<br><span class="chip on">жобаға сақталды</span>' : r.error ? '' : '<br><span class="chip draft">алдын ала қарау — сақталмады</span>') + '</td>' +
         '<td>' + (s && s.unknownCombos && s.unknownCombos.length ? '<div class="aChecks">' + s.unknownCombos.map(function (c) { return '<span class="aCheck">' + esc(c) + ' <button class="aBtn ghost" type="button" data-combo-new="' + esc(c) + '">+ комбинация</button><button class="aBtn ghost" type="button" data-combo-ignore="' + esc(c) + '">комбинация емес</button></span>'; }).join('') + '</div>' : '') + (s ? '<ul class="plain small">' + s.warnings.slice(0, 12).map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') + (s.skipped ? s.skipped.slice(0, 8).map(function (x) { return '<li>' + x.row + '-жол: ' + esc(x.reason) + '</li>'; }).join('') : '') + '</ul>' : '') + '</td>' +
         '<td>' + (r.reportId ? '<button class="aBtn" type="button" data-open="' + esc(r.reportId) + '">Есепті ашу</button>' : '') + '</td></tr>';
@@ -657,6 +657,7 @@ function settingsHTML() {
     '<div class="aRow"><button class="aBtn primary" type="button" data-a="sap-save">SapaLine баптауын сақтау</button></div></div>' +
     '<div class="aCard"><h3>JUZ40 платформасы баптауы</h3><p class="aHint">' + (st.platform.configured ? 'Аккаунт бапталған.' : '<span class="warnText">JUZ40_LOGIN / JUZ40_PASSWORD берілмеген.</span>') + ' Әр ағым × пәнге платформадағы курс id-ін беріңіз. Бір комбинация әрдайым бір курс деп жорамалданбайды: топтардың комбинацияға сәйкестігін «Топ атауы = код» жолдарымен жазыңыз.</p>' +
     (st.platform.configured ? '<div class="aRow"><button class="aBtn" type="button" data-a="plat-subjects">Платформадағы пәндерді анықтау</button></div>' + platSubjectsHTML() : '') +
+    '<div class="aRow">' + sel('', pc.scoreMethod || 'groups', [['groups', 'Топтардың орташа балдарының орташасы (әдепкі)'], ['students', 'Барлық оқушы бойынша (тапсырған санымен салмақталған)']], { label: 'Ортақ балл қалай есептеледі', name: 'plat-method' }) + '</div>' +
     '<div class="aRow">' + sel('', pf, streamOpts(), { label: 'Ағым', name: 'plat-filter' }) + '<label class="aField"><span>Қиын тапсырмалар саны (импортта)</span><input class="aIn num" data-cfg="plat.hardTaskLimit" value="' + esc(pc.hardTaskLimit || 10) + '"></label></div>' +
     '<div class="aTableWrap"><table class="aTable"><thead><tr><th>Пән</th><th colspan="2">Платформадағы курстар (бірнеше болуы мүмкін) және курстың комбинациясы</th><th>Топ → комбинация</th><th></th></tr></thead><tbody>' +
     pairs.filter(function (p) { return p[0].id === pf; }).map(function (p) {
@@ -765,6 +766,7 @@ adminEl.addEventListener('change', function (ev) {
   if (n && n.indexOf('rf-') === 0) { AD.rf[n.slice(3)] = t.value; loadReports().then(renderAdmin); return; }
   if (n === 'cat-stream') { AD.catStream = t.value; renderAdmin(); return; }
   if (n === 'plat-filter') { AD.platFilter = t.value; renderAdmin(); return; }
+  if (n === 'plat-method') { AD.platCfg.scoreMethod = t.value; return; }
   if (n === 'imp-json-file') {
     var f = t.files && t.files[0]; if (!f) return;
     var rd = new FileReader(); rd.onload = function () { AD.imp.jsonText = String(rd.result || ''); renderAdmin(); }; rd.readAsText(f);

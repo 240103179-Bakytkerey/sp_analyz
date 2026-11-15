@@ -543,7 +543,7 @@ function stPanel(e, i) {
     (isNum(m.score) && isNum(m.max) && m.max > 0 ? '<div class="pctTrack"><div class="pctFill" style="--pct:' + (100 * m.score / m.max).toFixed(2) + '"></div></div>' : '') +
     (m.reason === 'no_weights' ? '<p class="meta warnNote">Комбинациялардың тапсырған саны белгісіз — жай орташа жалпы нәтиже ретінде көрсетілмейді.</p>' : '') +
     '<div class="dynRow">' + dynChip(dyn, dyn && dyn.score, { big: true }) + '</div>' + flagsHTML(dyn) +
-    '<p class="meta">' + esc(srcName) + (isNum(m.submitted) ? ' · ' + fmtInt(m.submitted) + ' оқушы тапсырды' + (isNum(m.total) ? ' (' + fmtInt(m.total) + ' ішінен)' : '') : '') + '</p>' +
+    '<p class="meta">' + esc(srcName) + (m.source === 'platform' && e.data.scoreMethod === 'groups' && e.data.groupCount ? ' · ' + e.data.groupCount + ' топтың орташа балдарының орташасы' : m.source === 'platform' && e.data.scoreMethod === 'students' ? ' · барлық оқушы бойынша' : '') + (isNum(m.submitted) ? ' · ' + fmtInt(m.submitted) + ' оқушы тапсырды' + (isNum(m.total) ? ' (' + fmtInt(m.total) + ' ішінен)' : '') : '') + '</p>' +
     '<div class="attendance"><span class="attendanceLabel">Қайта тапсыру</span><strong>' + fmtPct(r.pct, 1) + '</strong><span class="attendanceDetail">' + esc(retakeDetail) + '</span>' +
     (dyn && dyn.status === 'ok' ? '<span class="attendanceDyn">' + dynChip(dyn, dyn.retake) + '</span>' : '') + '</div>') +
     (combos.length ? '<div class="miniTable"><p class="blockTitle">Комбинациялар бойынша</p><table><thead><tr><th></th><th>Балл</th><th>Тапсырды</th><th>Қайта тапсыру</th></tr></thead><tbody>' + combos.map(function (b) {
