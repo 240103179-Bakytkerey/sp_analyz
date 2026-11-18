@@ -28,6 +28,8 @@ for (const f of fs.readdirSync(path.join(ROOT, 'src/logos'))) {
     .replace(/id="([^"]+)"/g, `id="lg-${key}-$1"`).replace(/url\(#([^)]+)\)/g, `url(#lg-${key}-$1)`)
     .replace(/\s*\n\s*/g, '');
   if (bg) inner = inner.replace(new RegExp(`fill="${bg}"`, 'gi'), 'fill="none"');
+  // SMART PRO белгісінің сызбасы ортадан ~9,6 бірлік солға ығысқан (өлшенді) — плитка ортасына түзетіледі.
+  if (key === 'smart_pro') inner = `<g transform="translate(9.6 0)">${inner}</g>`;
   LOGOS[key] = { vb, inner, color: bg || null };
 }
 

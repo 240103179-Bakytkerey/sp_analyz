@@ -862,3 +862,61 @@ code{font-size:12px}
   .weeks{grid-column:3/-1;grid-row:2;justify-self:end;max-width:100%;min-width:0;margin-left:0}
   .act .flow{padding-top:calc(var(--hdrH,100px) + 26px)}
 }
+
+/* ===== Дизайн/векторлық туралау түзетулері ===== */
+/* A: плитканың жылтыр сызығы плитканың ішінде қиылады (бұрын орбитаның сыртына шығып тұрды) */
+.coreTile,.oTile,.pickEm,.curtainTile,.allTile{position:relative}
+/* B: сол жақ нөмірлер жолағы — нүкте нөмірдің үстіне түспейді */
+.railNums{right:8px}
+.railDot{right:32px}
+/* C: апталар тізімінің шетіндегі көлеңке — тағы апта бар екенін көрсетеді */
+.weeks[data-fr]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),#0000);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),#0000)}
+.weeks[data-fl]{-webkit-mask-image:linear-gradient(90deg,#0000,#000 28px);mask-image:linear-gradient(90deg,#0000,#000 28px)}
+.weeks[data-fl][data-fr]{-webkit-mask-image:linear-gradient(90deg,#0000,#000 28px calc(100% - 28px),#0000);mask-image:linear-gradient(90deg,#0000,#000 28px calc(100% - 28px),#0000)}
+/* D: кілт белгісі мен мәтін арасында аралық */
+#userBtn{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+#userBtn svg{width:13px;height:13px;flex:none}
+/* E: «барлық пәндер» торы */
+.allTile svg{width:72%;height:72%;color:#fff}
+/* F: фотосыз мұғалімнің белгісі дәл ортада, инициалдарға жабыспайды */
+.photoEmpty{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.photoEmpty svg{position:absolute;left:50%;top:50%;width:62%;height:auto;aspect-ratio:1;transform:translate(-50%,-50%);opacity:.1}
+.photoEmpty b{line-height:1}
+.photoEmpty span{margin-top:10px}
+.rosterPh{flex:none}
+.rosterPh b{color:#fff}
+/* G: телефонда фотосыз мұғалімге шағын шаршы белгі (бос үлкен жақтау орын алмайды) */
+@media (max-width:760px){
+  .act.teacher .photoCol.noPhoto .photoFloat{width:104px}
+  .act.teacher .photoCol.noPhoto .photoFrame{aspect-ratio:1;border-radius:24px}
+  .act.teacher .photoCol.noPhoto .photoEmpty b{font-size:34px}
+  .act.teacher .photoCol.noPhoto .photoEmpty span{display:none}
+  .act.teacher .photoCol.noPhoto .photoShadow{display:none}
+}
+/* H: жауап нұсқалары тар бағанда екі қатар (мәтін үстінде, жолақ пен сан астында) — планшет пен телефонда */
+.tasks{container-type:inline-size}
+@container (max-width:600px){
+  .opt{grid-template-columns:28px minmax(0,1fr) auto;row-gap:6px}
+  .optT{grid-column:2/4}
+  .optBar{grid-column:2;grid-row:2;align-self:center}
+  .optN{grid-column:3;grid-row:2}
+}
+/* J: химия/биологияда KaTeX формулалары тік шрифтпен (NaOH курсивпен шықпайды) */
+.act:is([data-subj="chemistry"],[data-subj="biology"]) .katex .mathnormal{font-family:var(--font-body);font-style:normal}
+/* K: «тең балл» шеңбердің ішінде емес, аттың қасында */
+.topRank{width:34px;height:34px;font-size:15px}
+.top3 li{grid-template-columns:34px minmax(0,1fr) auto}
+.tieTag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;border:1px solid color-mix(in oklab,var(--fgc) 30%,transparent);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;vertical-align:2px;opacity:.85}
+/* M: әкімші бөлімінің фоны тұтас — артындағы сайт көрінбейді */
+.admin{background:var(--deep)}
+/* N: сан өрістері өз белгісінің еніне тең — өрістер біркелкі тураланады */
+.aField .aIn.num{width:100%;min-width:92px}
+.aRow>.aField{flex:0 1 auto}
+/* O: телефонда әрекет жолағы бір қатар, көлденең жылжиды */
+@media (max-width:760px){
+  .aBar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:10px}
+  .aBar::-webkit-scrollbar{display:none}
+  .aBar .aBtn{flex:none}
+  .aBar .aStatus{display:none}
+}
+@media (max-width:760px){.aBar{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),#0000);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),#0000);padding-right:28px}}

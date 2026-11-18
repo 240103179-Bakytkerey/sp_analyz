@@ -183,6 +183,10 @@ function subjTile(s, cls) {
   return '<span class="tile ' + (cls || '') + '" style="--tile:' + esc((s && s.color) || '#1b36b0') + '">' + (L ? logoSVGOf(L) : '<b>' + esc((s && s.glyph) || '·') + '</b>') + '</span>';
 }
 function spTile(cls) { return '<span class="tile ' + (cls || '') + '" style="--tile:' + SP_GOLD + '">' + logoSVGOf(LOGOS.smart_pro) + '</span>'; }
+/** Кіші өлшемдегі «барлық пәндер» белгісі: 2×2 тор (SMART PRO жазуы 24–34px-те оқылмайды). */
+function allTile(cls) {
+  return '<span class="tile allTile ' + (cls || '') + '" style="--tile:' + SP_GOLD + '"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="5" width="6" height="6" rx="1.6" fill="currentColor"/><rect x="13" y="5" width="6" height="6" rx="1.6" fill="currentColor" opacity=".72"/><rect x="5" y="13" width="6" height="6" rx="1.6" fill="currentColor" opacity=".72"/><rect x="13" y="13" width="6" height="6" rx="1.6" fill="currentColor" opacity=".45"/></svg></span>';
+}
 /** Басты экран: пән таңдалса — сол пәннің ірі плиткасы; әйтпесе — SMART PRO айналасында 16 пәннің орбитасы. */
 function heroArt() {
   var s = subjOf(F.subject);
@@ -260,7 +264,7 @@ function renderHeader() {
     }).join('');
   var s = subjOf(F.subject);
   var pick = $('#subjPick');
-  pick.innerHTML = (s ? subjTile(s, 'pickEm') : spTile('pickEm')) + '<span class="pickName">' + esc(s ? s.name : F.type === 'bt' ? 'Барлық пәндер' : 'Барлық пәндер') + '</span><span class="pickCaret" aria-hidden="true">▾</span>';
+  pick.innerHTML = (s ? subjTile(s, 'pickEm') : allTile('pickEm')) + '<span class="pickName">' + esc(s ? s.name : F.type === 'bt' ? 'Барлық пәндер' : 'Барлық пәндер') + '</span><span class="pickCaret" aria-hidden="true">▾</span>';
   pick.setAttribute('aria-label', 'Пән: ' + (s ? s.name : 'барлық пәндер') + '. Өзгерту');
   var ps = (S.view && S.view.periods) || [];
   var box = $('#weeks');
@@ -268,7 +272,14 @@ function renderHeader() {
     return '<button class="weekBtn" type="button" data-period="' + esc(p.key) + '" aria-pressed="' + (S.view && p.key === S.view.period) + '"' + (p.drafts && S.drafts ? ' data-draft' : '') + '>' + esc(p.label) + '</button>';
   }).join('');
   var on = $('.weekBtn[aria-pressed="true"]', box);
-  if (on) box.scrollLeft = Math.max(0, on.offsetLeft - box.clientWidth + on.offsetWidth + 8);
+  requestAnimationFrame(function () {
+    if (on) {
+      var br = box.getBoundingClientRect(), or = on.getBoundingClientRect();
+      if (or.right > br.right - 6) box.scrollLeft += or.right - br.right + 12;
+      else if (or.left < br.left + 6) box.scrollLeft -= br.left - or.left + 12;
+    }
+    weeksEdges();
+  });
   var ub = $('#userBtn');
   ub.hidden = !S.user && !(S.session && S.session.publicView);
   syncHeaderHeight();
@@ -281,6 +292,14 @@ function renderHeader() {
   }
   if (window.__adminDirty && window.__adminDirty()) ub.setAttribute('data-dirty', ''); else ub.removeAttribute('data-dirty');
 }
+/** Апталар тізімі жылжитын болса, шетіндегі көлеңке «тағы бар» екенін көрсетеді. */
+function weeksEdges() {
+  var box = $('#weeks'); if (!box) return;
+  var more = box.scrollWidth - box.clientWidth > 2;
+  box.toggleAttribute('data-fl', more && box.scrollLeft > 2);
+  box.toggleAttribute('data-fr', more && box.scrollLeft < box.scrollWidth - box.clientWidth - 2);
+}
+document.getElementById('weeks').addEventListener('scroll', weeksEdges, { passive: true });
 /** Тақырып жолағының биіктігі (телефонда екі-үш қатар) — мазмұн одан төмен басталады. */
 function syncHeaderHeight() {
   var h = $('#hdr');
@@ -305,7 +324,7 @@ function openPicker() {
   p.innerHTML = '<div class="pickBox" role="dialog" aria-modal="true" aria-label="Пәнді таңдау">' +
     '<div class="pickHead"><input class="pickSearch" id="pickSearch" type="search" placeholder="Пәнді іздеу…" autocomplete="off" aria-label="Пәнді іздеу"><button class="pickClose" type="button" data-close aria-label="Жабу">✕</button></div>' +
     '<div class="pickBody" id="pickBody">' +
-    '<button class="pickItem all" type="button" data-subj="all" aria-pressed="' + (F.subject === 'all') + '">' + spTile('pickEm') + '<span><b>Барлық пәндер</b><small>Ағымның барлық мұғалімі бір тізімде</small></span></button>' +
+    '<button class="pickItem all" type="button" data-subj="all" aria-pressed="' + (F.subject === 'all') + '">' + allTile('pickEm') + '<span><b>Барлық пәндер</b><small>Ағымның барлық мұғалімі бір тізімде</small></span></button>' +
     groups.map(function (g) {
       return '<div class="pickGroup"><p class="pickGroupName">' + esc(g.name) + '</p><div class="pickGrid">' + g.items.map(function (s) {
         return '<button class="pickItem" type="button" data-subj="' + esc(s.id) + '" data-q="' + esc((s.name + ' ' + s.short).toLowerCase()) + '" aria-pressed="' + (F.subject === s.id) + '">' + subjTile(s, 'pickEm') + '<span><b>' + esc(s.name) + '</b></span></button>';
@@ -456,7 +475,7 @@ function rosterHTML(entries, periodLabel, comboIds) {
 
 /* ================= teacher panels ================= */
 function photoHTML(t, subject, i) {
-  return '<div class="photoCol"><div class="photoFloat"><div class="photoFrame">' +
+  return '<div class="photoCol' + (t && t.photo ? '' : ' noPhoto') + '"><div class="photoFloat"><div class="photoFrame">' +
     (t && t.photo ? '<img src="' + esc(t.photo) + '" alt="' + esc(t.name) + '" decoding="async"' + (i > 1 ? ' loading="lazy"' : '') + '>'
       : '<div class="photoEmpty">' + subjEmblem(subject) + '<b>' + esc(initials(t && t.name)) + '</b><span>Фото кейін қосылады</span></div>') +
     '</div><div class="photoShadow"></div></div></div>';
@@ -643,7 +662,7 @@ var ACT_CLOSE = '</div></div></div></section>';
 function topList(list, cls) {
   if (!list || !list.length) return '';
   return '<ol class="top3 ' + (cls || '') + '">' + list.map(function (x) {
-    return '<li><span class="topRank">' + x.rank + (x.tie ? '<small>тең</small>' : '') + '</span><span class="topName">' + esc(x.name) + '</span><span class="topScore">' + (isNum(x.score) ? fmtNum(x.score) : '') + '</span></li>';
+    return '<li><span class="topRank">' + x.rank + '</span><span class="topName">' + esc(x.name) + (x.tie ? ' <small class="tieTag">тең балл</small>' : '') + '</span><span class="topScore">' + (isNum(x.score) ? fmtNum(x.score) : '') + '</span></li>';
   }).join('') + '</ol>';
 }
 function btOverallAct(b, i) {
