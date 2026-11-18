@@ -401,7 +401,7 @@ function flagsHTML(dyn) {
   return '<ul class="flags">' + dyn.flags.map(function (f) {
     if (f.code === 'teacher_changed') return '<li>Алдыңғы кезеңде мұғалім басқа болған' + (f.prevTeacher ? ' (' + esc(f.prevTeacher.name) + ')' : '') + ' — айырманы мұғалім жұмысының әсері деп түсіндіруге болмайды.</li>';
     if (f.code === 'composition_changed') return '<li>Комбинациялар құрамы алдыңғы аптадан өзгеше — салыстыру шартты.</li>';
-    if (f.code === 'week_gap') return '<li>Күнтізбеде ' + esc(f.prev) + ' мен ' + esc(f.cur) + ' аралығындағы апталар жоқ — салыстыру ' + esc(f.prev) + ' аптасымен жүрді. Аралық апталарды Анықтамалық → Кезеңдер бөлімінде қосыңыз.</li>';
+    if (f.code === 'week_gap') return '<li>Күнтізбеде ' + esc(f.prev) + ' мен ' + esc(f.cur) + ' аралығындағы апталар жоқ, сондықтан салыстыру ' + esc(sinceText(f.prev).replace(/ салыстырғанда$/, '')) + ' жүрді. Әкімші аралық апталарды «Анықтамалық → Кезеңдер» бөлімінде қосса, салыстыру дұрыс аптамен болады.</li>';
     if (f.code === 'cohort_changed') return '<li>Когорта өзгерген (' + esc(f.prev || '—') + ' → ' + esc(f.cur || '—') + ') — салыстыру шартты.</li>';
     return '';
   }).join('') + '</ul>';
