@@ -572,6 +572,9 @@ function catalogHTML() {
   };
   return '<div class="aCard"><div class="aTabs inner">' + Object.keys(CAT_SPEC).map(function (k) { return '<button class="aTab" type="button" data-cat="' + k + '" aria-selected="' + (k === kind) + '">' + CAT_SPEC[k].title + ' <small>' + (cat()[k] || []).length + '</small></button>'; }).join('') + '</div>' +
     '<p class="aHint">' + esc(hints[kind] || '') + '</p>' +
+    (kind === 'periods' ? '<div class="aCard inner"><b>Айдың апталарын күнтізбеге қосу</b><div class="aRow">' + sel('', AD.fillStream || 'sp1', streamOpts(), { label: 'Ағым', name: 'fill-stream' }) +
+      '<label class="aField"><span>Оқу айы</span><input class="aIn num" name="fill-month" value="' + esc(AD.fillMonth || '') + '" inputmode="numeric"></label><label class="aField"><span>Апта саны</span><input class="aIn num" name="fill-weeks" value="' + esc(AD.fillWeeks || '4') + '" inputmode="numeric"></label>' +
+      '<button class="aBtn primary" type="button" data-a="fill-weeks">Қосу</button></div><p class="aSrc">Бар апталар өзгермейді, жоқтары ғана қосылады. Күнтізбе толық болса, «алдыңғы апта» дұрыс табылады.</p></div>' : '') +
     (kind === 'assignments' || kind === 'periods' ? '<div class="aRow">' + sel('', AD.catStream || '', streamOpts('Барлық ағым'), { label: 'Ағым сүзгісі', name: 'cat-stream' }) + '</div>' : '') +
     '<div class="aTableWrap"><table class="aTable catTable"><thead><tr>' + spec.cols.map(function (c) { return '<th>' + esc(c[1]) + '</th>'; }).join('') + '<th></th></tr></thead><tbody>' + body + '</tbody></table></div></div>';
 }
@@ -860,6 +863,18 @@ adminEl.addEventListener('click', function (ev) {
   if ((b = t.closest('[data-a]'))) {
     var a = b.getAttribute('data-a');
     if (a === 'all-combos') { AD.allCombos = !AD.allCombos; renderAdmin(); return; }
+    if (a === 'fill-weeks') {
+      var fs = impVal('fill-stream'), fm = +impVal('fill-month'), fw = +impVal('fill-weeks');
+      AD.fillStream = fs; AD.fillMonth = impVal('fill-month'); AD.fillWeeks = impVal('fill-weeks');
+      if (!(fm >= 1 && fw >= 1 && fw <= 10)) { toast('Оқу айы мен апта санын (1–10) жазыңыз', 'bad'); return; }
+      var have = (cat().periods || []).filter(function (p) { return p.stream_id === fs && p.kind === 'week' && p.month === fm; }).map(function (p) { return p.week; });
+      var todo = []; for (var wk = 1; wk <= fw; wk++) if (have.indexOf(wk) < 0) todo.push(wk);
+      guarded('fill', function () {
+        return todo.reduce(function (pr, wk) { return pr.then(function () { return api('POST', '/api/catalog', { kind: 'periods', item: { stream_id: fs, kind: 'week', month: fm, week: wk } }); }); }, Promise.resolve())
+          .then(reloadCatalog).then(function () { renderAdmin(); toast(todo.length ? todo.length + ' апта қосылды' : 'Бұл айдың апталары бұрыннан бар'); }).catch(function (e) { toast(e.message, 'bad'); });
+      });
+      return;
+    }
     if (a === 'plat-subjects') { api('POST', '/api/import?action=platform-subjects', {}).then(function (x) { AD.platSubjects = x.subjects; renderAdmin(); }).catch(function (e) { toast(e.message, 'bad'); }); return; }
     if (a === 'plat-codes-save') {
       var jobs = $$('[data-plat-code]', adminEl).map(function (el) {

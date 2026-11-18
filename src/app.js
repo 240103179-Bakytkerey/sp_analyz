@@ -90,7 +90,18 @@ function loadKatex() {
   katexState = js(base + 'katex.min.js').then(function () { return js(base + 'contrib/auto-render.min.js'); }).catch(function () { katexState = null; });
   return katexState;
 }
+/** Химия/биология есептерінің HTML мәтініндегі индекстер (NO3 → NO₃): тек мәтін түйіндеріне, формула ішіне емес. */
+function chemSubDom(rootEl) {
+  $$('.act:is([data-subj="chemistry"],[data-subj="biology"]) .task .rich', rootEl || document).forEach(function (el) {
+    if (el.hasAttribute('data-chem')) return;
+    el.setAttribute('data-chem', '');
+    var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, { acceptNode: function (n) { return n.parentElement.closest('math, .katex, sub, sup, script, style') ? NodeFilter.FILTER_REJECT : /[A-Z)]\d/.test(n.nodeValue) && !/\$|\\[(\[]/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP; } });
+    var list = []; while (w.nextNode()) list.push(w.currentNode);
+    list.forEach(function (n) { var s = document.createElement('span'); s.innerHTML = chemSub(esc(n.nodeValue)); n.replaceWith.apply(n, Array.prototype.slice.call(s.childNodes)); });
+  });
+}
 function typesetMath(rootEl) {
+  chemSubDom(rootEl);
   if (!rootEl) return;
   var targets = $$('.task, .aPreview, .rich', rootEl).filter(function (el) { return /\$|\\\(|\\\[/.test(el.textContent); });
   if (!targets.length) return;
@@ -390,6 +401,7 @@ function flagsHTML(dyn) {
   return '<ul class="flags">' + dyn.flags.map(function (f) {
     if (f.code === 'teacher_changed') return '<li>Алдыңғы кезеңде мұғалім басқа болған' + (f.prevTeacher ? ' (' + esc(f.prevTeacher.name) + ')' : '') + ' — айырманы мұғалім жұмысының әсері деп түсіндіруге болмайды.</li>';
     if (f.code === 'composition_changed') return '<li>Комбинациялар құрамы алдыңғы аптадан өзгеше — салыстыру шартты.</li>';
+    if (f.code === 'week_gap') return '<li>Күнтізбеде ' + esc(f.prev) + ' мен ' + esc(f.cur) + ' аралығындағы апталар жоқ — салыстыру ' + esc(f.prev) + ' аптасымен жүрді. Аралық апталарды Анықтамалық → Кезеңдер бөлімінде қосыңыз.</li>';
     if (f.code === 'cohort_changed') return '<li>Когорта өзгерген (' + esc(f.prev || '—') + ' → ' + esc(f.cur || '—') + ') — салыстыру шартты.</li>';
     return '';
   }).join('') + '</ul>';
