@@ -131,13 +131,6 @@ create table if not exists report_revisions (
 );
 create index if not exists report_revisions_report on report_revisions(report_id, id desc);
 
-create table if not exists acknowledgements (
-  user_id text not null references users(id),
-  report_id text not null references reports(id) on delete cascade,
-  published_rev integer not null,
-  at timestamptz not null default now(),
-  primary key (user_id, report_id, published_rev)
-);
 
 create table if not exists import_mappings (
   source text not null,
